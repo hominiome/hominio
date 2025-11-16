@@ -1,3 +1,10 @@
+## [0.1.21](https://github.com/hominiome/hominio-app/compare/v0.1.20...v0.1.21) (2025-11-16)
+
+
+### Bug Fixes
+
+* remove Python dependency, use sed instead ([73f5571](https://github.com/hominiome/hominio-app/commit/73f55713af3d4fcb57578422ab17238508abf85d))
+
 ## [0.1.20](https://github.com/hominiome/hominio-app/compare/v0.1.19...v0.1.20) (2025-11-16)
 
 
