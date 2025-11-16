@@ -108,7 +108,12 @@ jobs:
           # Otherwise, try automatic signing with -allowProvisioningUpdates
           if [ -f ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision ]; then
             echo "Using manual code signing with imported certificates..."
-            PROFILE_UUID=$(grep -aA1 UUID ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision | grep -o "[-A-Z0-9]\{36\}")
+            PROFILE_UUID=$(grep -aA1 UUID ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision | grep -o "[-A-Z0-9]\{36\}" | head -1)
+            echo "Found provisioning profile UUID: $PROFILE_UUID"
+            
+            # List available certificates
+            security find-identity -v -p codesigning
+            
             xcodebuild \
               -workspace app.xcodeproj/project.xcworkspace \
               -scheme app_iOS \
@@ -119,8 +124,13 @@ jobs:
               CODE_SIGN_IDENTITY="Apple Distribution" \
               DEVELOPMENT_TEAM="${{ secrets.APPLE_DEVELOPMENT_TEAM }}" \
               PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
+              PROVISIONING_PROFILE="$PROFILE_UUID" \
               archive \
-              -archivePath build/app.xcarchive
+              -archivePath build/app.xcarchive 2>&1 | tee build.log || {
+                echo "Build failed, showing last 50 lines of log:"
+                tail -50 build.log
+                exit 1
+              }
           else
             echo "Using automatic code signing..."
             xcodebuild -allowProvisioningUpdates \
