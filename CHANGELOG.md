@@ -1,3 +1,10 @@
+## [0.1.15](https://github.com/hominiome/hominio-app/compare/v0.1.14...v0.1.15) (2025-11-16)
+
+
+### Bug Fixes
+
+* resolve YAML syntax error in workflow file ([f591ccd](https://github.com/hominiome/hominio-app/commit/f591ccd257df4174889f8b28d994d23d593645a5))
+
 ## [0.1.14](https://github.com/hominiome/hominio-app/compare/v0.1.13...v0.1.14) (2025-11-16)
 
 
