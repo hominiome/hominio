@@ -67,9 +67,9 @@ jobs:
       - name: Build iOS app
         env:
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
-          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ""
-          FASTLANE_USER: ""
-          FASTLANE_PASSWORD: ""
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ''
+          FASTLANE_USER: ''
+          FASTLANE_PASSWORD: ''
         run: |
           # Check available SDKs
           echo "Available SDKs:"
