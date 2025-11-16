@@ -1,0 +1,154 @@
+---
+alwaysApply: true
+---
+
+## Version Management System
+
+This project uses **semantic-release** with conventional commits for automated version management across all platforms (package.json, Cargo.toml, tauri.conf.json, iOS Info.plist).
+
+### Version Sync
+
+Versions are automatically synced across:
+- `package.json`
+- `src-tauri/Cargo.toml`
+- `src-tauri/tauri.conf.json`
+- `src-tauri/gen/apple/app_iOS/Info.plist` (iOS)
+- `src-tauri/gen/apple/project.yml` (iOS)
+
+**Commands:**
+- `bun run version:sync <version>` - Sync specific version across all files
+- `bun run release` - Run semantic-release (analyzes commits, bumps version, creates release)
+- `bun run release:dry-run` - Test what semantic-release would do
+
+### How Semantic Release Works
+
+1. **Only runs on `main` branch** - Releases are only triggered when running on the `main` branch
+2. Analyzes commits since last release using conventional commit format
+3. Determines next version (patch/minor) based on commit types
+4. Updates all version files automatically
+5. Generates CHANGELOG.md
+6. **Creates git tag** (e.g., `v0.2.0`) locally
+7. **Creates GitHub release** with the tag (automatically pushes tag to GitHub)
+8. Commits all changes
+
+**Git Tags:** Semantic-release automatically creates git tags and pushes them to GitHub via the `@semantic-release/github` plugin. You don't need to manually push tags - they're handled automatically.
+
+**Branch Protection:** Releases only happen on the `main` branch. Running `bun run release` on other branches will not create releases.
+
+---
+
+## Workflow
+
+### Standard Workflow
+
+1. Make changes
+2. Stage changes: `git add .`
+3. Commit with conventional format: `git commit -m "feat: description"`
+4. Push: `git push`
+5. Run semantic-release: `bun run release` (or let CI do it)
+
+### Testing Before Release
+
+Before running actual release, test what would happen:
+```bash
+bun run release:dry-run
+```
+
+This shows what version would be released without making any changes.
+
+---
+
+## GitHub Actions Integration
+
+Two workflows are set up for fully automated releases:
+
+### 1. Release Workflow (`.github/workflows/release.yml`)
+
+Runs semantic-release on pushes to `main`:
+- Analyzes commits
+- Bumps version
+- Creates GitHub release with tag
+- Generates CHANGELOG.md
+
+### 2. iOS Release Workflow (`.github/workflows/ios-release.yml`)
+
+Automatically triggers when a GitHub release is created:
+- Builds frontend (SvelteKit)
+- Builds iOS app (Tauri)
+- Uploads IPA to TestFlight automatically
+
+**Complete Flow:**
+1. Commit with conventional format: `feat: new feature`
+2. Push to `main`: `git push`
+3. Release workflow runs → Creates GitHub release
+4. iOS workflow automatically triggers → Builds & uploads to TestFlight
+5. App appears in TestFlight! 🎉
+
+**Required GitHub Secrets:**
+- `APPSTORE_CONNECT_API_KEY` - Contents of `.p8` file from App Store Connect
+- `APPSTORE_CONNECT_API_KEY_ID` - Key ID from App Store Connect
+- `APPSTORE_CONNECT_ISSUER_ID` - Issuer ID from App Store Connect
+- `APPLE_DEVELOPMENT_TEAM` - Your Team ID (e.g., `2P6VCHVJWB`)
+
+See `.github/workflows/README.md` for detailed setup instructions.
+
+---
+
+## Quick Reference
+
+**Want a Minor Bump (0.1.0 → 0.2.0)?**
+```bash
+git commit -m "feat: your new feature"
+```
+
+**Want a Patch Bump (0.1.0 → 0.1.1)?**
+```bash
+git commit -m "fix: your bug fix"
+# OR
+git commit -m "perf: your performance improvement"
+```
+
+**Want a Major Bump (0.1.0 → 1.0.0)?**
+⚠️ **MAJOR VERSION BUMPS ARE MANUAL ONLY** - No commits (including breaking changes) can trigger major version bumps automatically.
+
+To manually trigger a major version bump:
+```bash
+# Automatically bumps to next major version (0.1.0 → 1.0.0)
+bun run release:major
+
+# Or specify exact version
+bun run release:major 1.0.0
+```
+
+This script will:
+1. Sync version across all files (package.json, Cargo.toml, tauri.conf.json, iOS files)
+2. Commit the version change
+3. Create git tag
+
+Then manually run semantic-release:
+```bash
+git push  # Push the version commit
+bun run release  # Creates tag, GitHub release, and CHANGELOG automatically
+```
+
+**Note:** Semantic-release will automatically create and push the git tag to GitHub. You don't need to manually push tags - the `@semantic-release/github` plugin handles this.
+
+**Important:** Breaking change commits (`feat!:` or `BREAKING CHANGE:`) will be documented in CHANGELOG but will **NOT** trigger automatic version bumps. Major bumps must be triggered manually using `bun run release:major`.
+
+**Don't Want a Bump?**
+```bash
+git commit -m "docs: update documentation"
+git commit -m "refactor: clean up code"
+git commit -m "chore: update dependencies"
+```
+
+---
+
+## Important Notes
+
+- **ALWAYS use conventional commits** - This is required for semantic-release to work
+- **Version sync happens automatically** - When you run `bun run release`, all version files are updated
+- **Test before releasing** - Use `bun run release:dry-run` to preview changes
+- **Breaking changes** - Breaking change commits (`feat!:` or `BREAKING CHANGE:`) will be documented in CHANGELOG but will **NOT** trigger automatic major version bumps.
+- **Major version bumps are manual only** - Use `bun run release:major` to manually trigger major version bump via semantic-release
+- **Git tags are automatic** - Semantic-release creates and pushes tags to GitHub automatically - no manual tag pushing needed

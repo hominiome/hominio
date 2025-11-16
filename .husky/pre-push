@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Option 1: Auto-bump version on push to main (minor bump)
+# Uncomment below if you want automatic minor bumps on every push to main
+
+# branch="$(git rev-parse --abbrev-ref HEAD)"
+# 
+# if [ "$branch" = "main" ]; then
+#   echo "🔄 Auto-bumping version (minor) for main branch..."
+#   bun run version:bump:minor
+#   git add package.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
+#   git commit -m "chore: bump version [skip ci]" --no-verify || true
+# fi
+
+# Option 2: Use semantic-release instead (RECOMMENDED)
+# Just use conventional commits (feat:, fix:) and run `bun run release`
+# This is better because it bumps based on commit types, not every commit
