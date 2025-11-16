@@ -58,12 +58,6 @@ jobs:
       - name: Build frontend
         run: bun run build
 
-      - name: Build Rust library for iOS
-        run: |
-          cd src-tauri
-          cargo build --release --target aarch64-apple-ios
-        working-directory: ${{ github.workspace }}
-
       - name: Build iOS app
         env:
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
