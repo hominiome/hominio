@@ -1,3 +1,10 @@
+## [0.1.19](https://github.com/hominiome/hominio-app/compare/v0.1.18...v0.1.19) (2025-11-16)
+
+
+### Bug Fixes
+
+* add secret availability checks and better error handling ([d8c27ca](https://github.com/hominiome/hominio-app/commit/d8c27ca16a514b2b8d0ded25d2a50ce1a41df719))
+
 ## [0.1.18](https://github.com/hominiome/hominio-app/compare/v0.1.17...v0.1.18) (2025-11-16)
 
 
