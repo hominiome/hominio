@@ -90,7 +90,9 @@
             {
                 "successComment": false,
                 "releasedLabels": false,
-                "assets": []
+                "assets": [],
+                "draft": false,
+                "generateNotes": true
             }
         ]
     ]
