@@ -158,60 +158,39 @@ jobs:
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
         working-directory: ${{ github.workspace }}
 
-      - name: Build Rust library for iOS
+      - name: Build iOS app with Tauri
+        env:
+          APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
+          CI: true
         run: |
           cd src-tauri
-          echo "Building Rust library for iOS (arm64)..."
-          # Build directly with cargo to avoid dev server dependency
-          cargo build --release --target aarch64-apple-ios
-          
-          # Ensure the output directory exists
-          mkdir -p gen/apple/Externals/arm64/release
-          
-          # Copy the built library to where Xcode expects it
-          cp target/aarch64-apple-ios/release/libapp.a gen/apple/Externals/arm64/release/libapp.a || {
-            echo "Error: Failed to copy libapp.a"
-            echo "Checking if library exists..."
-            ls -la target/aarch64-apple-ios/release/ | grep libapp || true
-            exit 1
-          }
-          
-          echo "✅ Rust library built successfully"
-          ls -lh gen/apple/Externals/arm64/release/libapp.a
 
-      - name: Build iOS app
+          # Build Rust library for iOS using cargo directly (cleaner than going through Tauri CLI)
+          echo "Building Rust library for iOS..."
+          cargo build --release --target aarch64-apple-ios
+
+          # Ensure output directory exists and copy library with correct name
+          mkdir -p gen/apple/Externals/arm64/release
+
+          # Find and copy the static library (handles both libapp.a and libapp_lib.a)
+          LIBRARY=$(find target/aarch64-apple-ios/release -name "libapp*.a" -type f | head -1)
+          if [ -z "$LIBRARY" ]; then
+            echo "Error: No Rust library found"
+            ls -la target/aarch64-apple-ios/release/ | grep -E "\.(a|rlib)$" || true
+            exit 1
+          fi
+
+          cp "$LIBRARY" gen/apple/Externals/arm64/release/libapp.a
+          echo "✅ Rust library ready: $(ls -lh gen/apple/Externals/arm64/release/libapp.a)"
+
+      - name: Archive and export iOS app
         env:
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
         run: |
           cd src-tauri/gen/apple
 
-          # Find available iOS SDK version
           IOS_SDK=$(xcodebuild -showsdks | grep -i "iphoneos" | head -1 | awk '{print $NF}' || echo "iphoneos")
           echo "Using iOS SDK: $IOS_SDK"
-          
-          # Ensure Rust library is built
-          if [ ! -f "../Externals/arm64/release/libapp.a" ]; then
-            echo "Warning: Rust library not found, building now..."
-            cd ../..
-            bun tauri ios build --release --target aarch64-apple-ios || cargo build --release --target aarch64-apple-ios
-            cd gen/apple
-          fi
-          
-          # Create dummy server address file to satisfy Tauri's dev server check
-          # Tauri's xcode-script tries to read this file - create it in common temp locations
-          # Try multiple locations since Tauri might check different temp dirs
-          for TEMP_DIR in "$TMPDIR" "$TMP" "/tmp" "$(getconf DARWIN_USER_TEMP_DIR 2>/dev/null)"; do
-            if [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ]; then
-              SERVER_ADDR_FILE="${TEMP_DIR}/me.hominio.app-server-addr"
-              echo "" > "$SERVER_ADDR_FILE" 2>/dev/null && echo "Created: $SERVER_ADDR_FILE" && break || true
-            fi
-          done
-          # Also try the specific path from the error (might be user-specific)
-          mkdir -p /var/folders 2>/dev/null || true
-          find /var/folders -type d -name "T" 2>/dev/null | head -1 | while read T_DIR; do
-            SERVER_ADDR_FILE="${T_DIR}/me.hominio.app-server-addr"
-            echo "" > "$SERVER_ADDR_FILE" 2>/dev/null && echo "Created: $SERVER_ADDR_FILE" || true
-          done
 
           # Build with code signing
           # If certificates/profiles are imported, use manual signing
