@@ -227,104 +227,26 @@ jobs:
             echo "✅ Rust library built and ready: $(ls -lh gen/apple/Externals/arm64/release/libapp.a)"
           fi
 
-      - name: Archive and export iOS app
+      - name: Build iOS app with Tauri CLI
         env:
           APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_DEVELOPMENT_TEAM }}
-          CI: "true"
-          TAURI_BUILD: "1"
-          RUST_BACKTRACE: "1"
+          CI: 'true'
+          TAURI_BUILD: '1'
+          RUST_BACKTRACE: '1'
         run: |
-          cd src-tauri/gen/apple
-
-          IOS_SDK=$(xcodebuild -showsdks | grep -i "iphoneos" | head -1 | awk '{print $NF}' || echo "iphoneos")
-          echo "Using iOS SDK: $IOS_SDK"
-
-          # Explicitly export CI environment variables so they're available to Xcode build scripts
-          # Xcode build scripts run in a separate shell and need these exported
+          # Explicitly export CI environment variables so they're available to all child processes
+          # This includes Tauri's xcode-script which runs during Xcode build
           export CI=true
           export TAURI_BUILD=1
           export RUST_BACKTRACE=1
+          
           echo "CI mode enabled - Tauri should skip dev server connection"
           echo "Environment variables: CI=$CI, TAURI_BUILD=$TAURI_BUILD"
-
-          # Build with code signing
-          # If certificates/profiles are imported, use manual signing
-          # Otherwise, try automatic signing with -allowProvisioningUpdates
-          PROFILE_FILE=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)
-
-          if [ -n "$PROFILE_FILE" ] && [ -f "$PROFILE_FILE" ]; then
-            echo "Using manual code signing with imported certificates..."
-            echo "Found provisioning profile: $PROFILE_FILE"
-            
-            # Extract UUID from filename (profile was renamed with UUID in previous step)
-            PROFILE_UUID=$(basename "$PROFILE_FILE" .mobileprovision)
-            
-            # Validate UUID format (should be 36 characters with dashes, accepts both uppercase and lowercase)
-            if [ ${#PROFILE_UUID} -ne 36 ] || ! echo "$PROFILE_UUID" | grep -qiE "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"; then
-              echo "Error: Invalid UUID format extracted from filename: $PROFILE_UUID"
-              echo "Available profiles:"
-              ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
-              exit 1
-            fi
-            
-            echo "Using provisioning profile UUID: $PROFILE_UUID"
-            
-            # Verify profile bundle ID matches (optional check)
-            PROFILE_XML=$(security cms -D -i "$PROFILE_FILE" 2>/dev/null || echo "")
-            if [ -n "$PROFILE_XML" ]; then
-              PROFILE_BUNDLE_ID=$(echo "$PROFILE_XML" | grep -aA1 "<key>application-identifier</key>" | grep -o "<string>.*</string>" | sed 's/<string>\(.*\)<\/string>/\1/' | head -1 | cut -d. -f2-)
-              EXPECTED_BUNDLE_ID="me.hominio.app"
-              echo "Profile bundle ID: $PROFILE_BUNDLE_ID"
-              echo "Expected bundle ID: $EXPECTED_BUNDLE_ID"
-              
-              if [ "$PROFILE_BUNDLE_ID" != "$EXPECTED_BUNDLE_ID" ]; then
-                echo "Warning: Profile bundle ID ($PROFILE_BUNDLE_ID) doesn't match expected ($EXPECTED_BUNDLE_ID)"
-              fi
-            fi
-            
-            # List available certificates
-            security find-identity -v -p codesigning
-            
-            # Use UUID for PROVISIONING_PROFILE (Xcode expects UUID, not path)
-            # CI environment variables are inherited from the step's env section
-            xcodebuild \
-              -workspace app.xcodeproj/project.xcworkspace \
-              -scheme app_iOS \
-              -sdk "$IOS_SDK" \
-              -configuration release \
-              -destination 'generic/platform=iOS' \
-              CODE_SIGN_STYLE=Manual \
-              CODE_SIGN_IDENTITY="Apple Distribution" \
-              DEVELOPMENT_TEAM="${{ secrets.APPLE_DEVELOPMENT_TEAM }}" \
-              PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
-              PROVISIONING_PROFILE="$PROFILE_UUID" \
-              archive \
-              -archivePath build/app.xcarchive \
-              2>&1 | tee build.log || {
-                echo "Build failed, showing last 50 lines of log:"
-                tail -50 build.log
-                exit 1
-              }
-          else
-            echo "Using automatic code signing..."
-            # CI environment variables are inherited from the step's env section
-            xcodebuild -allowProvisioningUpdates \
-              -workspace app.xcodeproj/project.xcworkspace \
-              -scheme app_iOS \
-              -sdk "$IOS_SDK" \
-              -configuration release \
-              -destination 'generic/platform=iOS' \
-              CODE_SIGN_STYLE=Automatic \
-              DEVELOPMENT_TEAM="${{ secrets.APPLE_DEVELOPMENT_TEAM }}" \
-              archive \
-              -archivePath build/app.xcarchive
-          fi
-
-          # Export IPA
-          xcodebuild -exportArchive \
-            -archivePath build/app.xcarchive \
-            -exportPath build \
-            -exportOptionsPlist ExportOptions.plist
+          
+          # Use Tauri CLI to build iOS app - it handles CI mode detection better
+          # This will build the IPA directly without manual xcodebuild steps
+          cd ${{ github.workspace }}
+          bun tauri ios build
         working-directory: ${{ github.workspace }}
 
       # ============================================
@@ -333,10 +255,13 @@ jobs:
       - name: Find IPA file
         id: find-ipa
         run: |
+          # Tauri ios build outputs IPA in src-tauri/gen/apple/build/arm64/ or similar
           IPA_PATH=$(find src-tauri/gen/apple/build -name "*.ipa" -type f | head -1)
           if [ -z "$IPA_PATH" ]; then
             echo "Error: IPA file not found"
-            find src-tauri/gen/apple/build -type f
+            echo "Searching in common locations:"
+            find src-tauri/gen/apple -name "*.ipa" -type f 2>/dev/null || echo "No IPA found"
+            find src-tauri/target -name "*.ipa" -type f 2>/dev/null || echo "No IPA in target"
             exit 1
           fi
           echo "ipa_path=$IPA_PATH" >> $GITHUB_OUTPUT
