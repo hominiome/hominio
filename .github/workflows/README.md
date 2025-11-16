@@ -36,29 +36,90 @@ Go to: **Settings → Secrets and variables → Actions**
 
 If you want to avoid manual Apple ID authentication in CI, you can provide certificates and provisioning profiles:
 
-1. **Create a Distribution Certificate:**
-   - Go to [Apple Developer Portal](https://developer.apple.com/account/resources/certificates/list)
-   - Create an "Apple Distribution" certificate
-   - Download and export as `.p12` file with a password
+#### Step 1: Create an Apple Distribution Certificate
 
-2. **Create an App Store Provisioning Profile:**
-   - Go to [Apple Developer Portal](https://developer.apple.com/account/resources/profiles/list)
-   - Create an "App Store" provisioning profile for `me.hominio.app`
+1. **Open Keychain Access on your Mac:**
+   - Open Keychain Access (Applications > Utilities > Keychain Access)
+
+2. **Request a Certificate from a Certificate Authority:**
+   - Go to Keychain Access > Certificate Assistant > Request a Certificate From a Certificate Authority
+   - Enter your email address (use the one associated with your Apple Developer account)
+   - Enter a common name (e.g., "iOS Distribution")
+   - Select "Saved to disk"
+   - Click "Continue" and save the `.certSigningRequest` file
+
+3. **Create the Certificate in Apple Developer Portal:**
+   - Go to [Apple Developer Portal - Certificates](https://developer.apple.com/account/resources/certificates/list)
+   - Click the **"+"** button
+   - Select **"Apple Distribution"** under "Software"
+   - Click "Continue"
+   - Upload the `.certSigningRequest` file you just created
+   - Click "Continue" and then "Register"
+   - Download the certificate (`.cer` file)
+
+4. **Install and Export the Certificate:**
+   - Double-click the downloaded `.cer` file to install it in Keychain Access
+   - In Keychain Access, find the certificate under "My Certificates"
+   - Right-click the certificate → **"Export 'Apple Distribution: ...'"**
+   - Choose format: **"Personal Information Exchange (.p12)"**
+   - Set a password (remember this - you'll need it for `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD`)
+   - Save the `.p12` file
+
+#### Step 2: Create an App Store Provisioning Profile
+
+1. **Go to Apple Developer Portal:**
+   - Go to [Apple Developer Portal - Profiles](https://developer.apple.com/account/resources/profiles/list)
+
+2. **Create a New Profile:**
+   - Click the **"+"** button
+   - Under "Distribution", select **"App Store"**
+   - Click "Continue"
+
+3. **Select App ID:**
+   - Select **"me.hominio.app"** (or create it if it doesn't exist)
+   - Click "Continue"
+
+4. **Select Certificate:**
+   - Select the **"Apple Distribution"** certificate you just created
+   - Click "Continue"
+
+5. **Name and Download:**
+   - Enter a profile name (e.g., "Hominio App Store")
+   - Click "Generate"
    - Download the `.mobileprovision` file
 
-3. **Encode and add as secrets:**
+#### Step 3: Encode and Add as GitHub Secrets
+
+1. **Encode the Certificate (.p12):**
    ```bash
-   # Encode certificate
-   base64 -i certificate.p12 | pbcopy
-   # Add as secret: IOS_DISTRIBUTION_CERTIFICATE
-   
-   # Encode provisioning profile  
-   base64 -i profile.mobileprovision | pbcopy
-   # Add as secret: IOS_PROVISIONING_PROFILE
-   
-   # Add certificate password
-   # Add as secret: IOS_DISTRIBUTION_CERTIFICATE_PASSWORD
+   # In Terminal, navigate to where you saved the .p12 file
+   base64 -i YourCertificate.p12 | pbcopy
    ```
+   - This copies the base64-encoded certificate to your clipboard
+   - Go to GitHub → Settings → Secrets → Actions
+   - Click "New repository secret"
+   - Name: `IOS_DISTRIBUTION_CERTIFICATE`
+   - Value: Paste the base64 string from clipboard
+   - Click "Add secret"
+
+2. **Encode the Provisioning Profile (.mobileprovision):**
+   ```bash
+   # In Terminal, navigate to where you saved the .mobileprovision file
+   base64 -i YourProfile.mobileprovision | pbcopy
+   ```
+   - This copies the base64-encoded profile to your clipboard
+   - Go to GitHub → Settings → Secrets → Actions
+   - Click "New repository secret"
+   - Name: `IOS_PROVISIONING_PROFILE`
+   - Value: Paste the base64 string from clipboard
+   - Click "Add secret"
+
+3. **Add Certificate Password:**
+   - Go to GitHub → Settings → Secrets → Actions
+   - Click "New repository secret"
+   - Name: `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD`
+   - Value: The password you set when exporting the `.p12` file
+   - Click "Add secret"
 
 **Note:** If you don't provide certificates/profiles, the workflow will try automatic signing, but this requires Xcode to be authenticated with an Apple ID (not available in CI). Providing certificates/profiles is the recommended approach for reliable CI/CD.
 
