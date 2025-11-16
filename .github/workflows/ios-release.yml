@@ -35,7 +35,7 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.0'
+          xcode-version: '16.1'  # Use stable version with iOS SDK installed
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -71,13 +71,13 @@ jobs:
           # Check available SDKs
           echo "Available SDKs:"
           xcodebuild -showsdks
-          
+
           cd src-tauri/gen/apple
-          
+
           # Find available iOS SDK version
           IOS_SDK=$(xcodebuild -showsdks | grep -i "iphoneos" | head -1 | awk '{print $NF}' || echo "iphoneos")
           echo "Using iOS SDK: $IOS_SDK"
-          
+
           # Build with explicit SDK and destination
           xcodebuild -allowProvisioningUpdates \
             -workspace app.xcodeproj/project.xcworkspace \
@@ -87,7 +87,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             archive \
             -archivePath build/app.xcarchive
-          
+
           # Export IPA
           xcodebuild -exportArchive \
             -archivePath build/app.xcarchive \
