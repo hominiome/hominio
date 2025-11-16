@@ -166,32 +166,42 @@ jobs:
         run: |
           cd src-tauri
 
-          # Check if library already exists from cache
+          # Ensure output directory exists
           mkdir -p gen/apple/Externals/arm64/release
-          if [ -f "gen/apple/Externals/arm64/release/libapp.a" ]; then
-            echo "✅ Rust library found in cache, skipping build"
+
+          # Debug: Check what's in the cache
+          echo "Checking for cached Rust library..."
+          echo "Target directory exists: $([ -d target/aarch64-apple-ios/release ] && echo 'yes' || echo 'no')"
+          if [ -d target/aarch64-apple-ios/release ]; then
+            echo "Files in target/aarch64-apple-ios/release:"
+            ls -la target/aarch64-apple-ios/release/ | grep -E "\.(a|rlib)$" | head -5 || echo "  (none found)"
+          fi
+
+          # Check if library exists in target directory first (this is cached)
+          LIBRARY=$(find target/aarch64-apple-ios/release -name "libapp*.a" -type f 2>/dev/null | head -1)
+          
+          if [ -n "$LIBRARY" ]; then
+            echo "✅ Found Rust library in cache: $LIBRARY"
+            cp "$LIBRARY" gen/apple/Externals/arm64/release/libapp.a
+            echo "✅ Rust library ready: $(ls -lh gen/apple/Externals/arm64/release/libapp.a)"
+          elif [ -f "gen/apple/Externals/arm64/release/libapp.a" ]; then
+            echo "✅ Rust library found in gen/apple (from previous step), skipping build"
             ls -lh gen/apple/Externals/arm64/release/libapp.a
           else
-            # Check if library exists in target directory (from previous build)
-            LIBRARY=$(find target/aarch64-apple-ios/release -name "libapp*.a" -type f 2>/dev/null | head -1)
-            if [ -n "$LIBRARY" ]; then
-              echo "✅ Found existing Rust library, copying..."
-              cp "$LIBRARY" gen/apple/Externals/arm64/release/libapp.a
-            else
-              # Only build if library doesn't exist
-              echo "Building Rust library for iOS (this may take a while)..."
-              cargo build --release --target aarch64-apple-ios
-              
-              LIBRARY=$(find target/aarch64-apple-ios/release -name "libapp*.a" -type f | head -1)
-              if [ -z "$LIBRARY" ]; then
-                echo "Error: No Rust library found after build"
-                ls -la target/aarch64-apple-ios/release/ | grep -E "\.(a|rlib)$" || true
-                exit 1
-              fi
-              
-              cp "$LIBRARY" gen/apple/Externals/arm64/release/libapp.a
+            # Only build if library doesn't exist anywhere
+            echo "⚠️  No cached library found, building Rust library for iOS..."
+            echo "This will download and compile dependencies (may take 2-3 minutes)"
+            cargo build --release --target aarch64-apple-ios
+            
+            LIBRARY=$(find target/aarch64-apple-ios/release -name "libapp*.a" -type f | head -1)
+            if [ -z "$LIBRARY" ]; then
+              echo "Error: No Rust library found after build"
+              ls -la target/aarch64-apple-ios/release/ | grep -E "\.(a|rlib)$" || true
+              exit 1
             fi
-            echo "✅ Rust library ready: $(ls -lh gen/apple/Externals/arm64/release/libapp.a)"
+            
+            cp "$LIBRARY" gen/apple/Externals/arm64/release/libapp.a
+            echo "✅ Rust library built and ready: $(ls -lh gen/apple/Externals/arm64/release/libapp.a)"
           fi
 
       - name: Archive and export iOS app
