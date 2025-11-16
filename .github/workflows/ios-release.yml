@@ -69,7 +69,7 @@ jobs:
           # Check if secrets are provided (they may be empty)
           CERT="${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}"
           PROFILE="${{ secrets.IOS_PROVISIONING_PROFILE }}"
-          
+
           if [ -z "$CERT" ] || [ -z "$PROFILE" ] || [ "$CERT" = "" ] || [ "$PROFILE" = "" ]; then
             echo "Certificates/profiles not provided, skipping import..."
             exit 0
