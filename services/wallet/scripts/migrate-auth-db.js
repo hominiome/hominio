@@ -20,6 +20,7 @@ import { NeonDialect } from "kysely-neon";
 import { neon } from "@neondatabase/serverless";
 
 // Use process.env for standalone script execution (not SvelteKit context)
+// Bun automatically loads .env files, so process.env will have the values
 const DATABASE_URL = process.env.WALLET_POSTGRES_SECRET;
 
 if (!DATABASE_URL) {
