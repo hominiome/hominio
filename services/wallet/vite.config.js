@@ -20,4 +20,8 @@ export default defineConfig({
 		port: process.env.PORT ? Number(process.env.PORT) : 4201,
 		strictPort: true,
 	},
+	resolve: {
+		// Ensure proper module resolution in monorepo
+		preserveSymlinks: false,
+	},
 });

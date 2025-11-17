@@ -68,8 +68,8 @@ export const auth = betterAuth({
     // Polar plugin - automatically creates customers on signup
     // Note: Checkout and webhooks are handled by the legacy system for now
     // Dedicated services will be created later
-    // Only add Polar plugin if we have both the client AND the API key
-    ...(polarClient && POLAR_API_KEY
+    // Only add Polar plugin if we have both the client AND a non-empty API key
+    ...(polarClient && POLAR_API_KEY && POLAR_API_KEY.trim() !== ""
       ? [
           polar({
             client: polarClient,
