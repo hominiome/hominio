@@ -1,3 +1,10 @@
+## [0.1.23](https://github.com/hominiome/hominio-app/compare/v0.1.22...v0.1.23) (2025-11-17)
+
+
+### Bug Fixes
+
+* combine duplicate push triggers in release workflow ([b37539b](https://github.com/hominiome/hominio-app/commit/b37539b48b4cb0c1adfaeb51857f73b192a0d806))
+
 ## [0.1.22](https://github.com/hominiome/hominio-app/compare/v0.1.21...v0.1.22) (2025-11-16)
 
 
