@@ -49,10 +49,9 @@ jobs:
             echo ""
             echo "🔍 Checking tag: $TAG"
             
-            # Check if release exists
-            if gh release view "$TAG" &>/dev/null; then
-              echo "✅ Release already exists for $TAG"
-            else
+            # Check if release exists (more reliable check)
+            RELEASE_CHECK=$(gh release view "$TAG" 2>&1)
+            if echo "$RELEASE_CHECK" | grep -q "release not found\|not found\|404"; then
               echo "⚠️  Release NOT found for $TAG - creating it..."
               
               # Extract release notes from CHANGELOG
@@ -67,23 +66,30 @@ jobs:
                   echo "$NOTES" | gh release create "$TAG" \
                     --title "$TAG" \
                     --notes-file - \
-                    --target main
+                    --target main || echo "⚠️  Failed to create release for $TAG"
                 else
                   echo "📝 Generating release notes automatically for $TAG"
                   gh release create "$TAG" \
                     --title "$TAG" \
                     --generate-notes \
-                    --target main
+                    --target main || echo "⚠️  Failed to create release for $TAG"
                 fi
               else
                 echo "📝 Generating release notes automatically for $TAG (no CHANGELOG)"
                 gh release create "$TAG" \
                   --title "$TAG" \
                   --generate-notes \
-                  --target main
+                  --target main || echo "⚠️  Failed to create release for $TAG"
               fi
               
-              echo "✅ Release created for $TAG"
+              # Verify release was created
+              if gh release view "$TAG" &>/dev/null; then
+                echo "✅ Release created successfully for $TAG"
+              else
+                echo "❌ ERROR: Release creation failed for $TAG"
+              fi
+            else
+              echo "✅ Release already exists for $TAG"
             fi
           done
           
