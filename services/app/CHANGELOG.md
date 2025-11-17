@@ -1,3 +1,10 @@
+## [0.5.12](https://github.com/hominiome/hominio/compare/v0.5.11...v0.5.12) (2025-11-17)
+
+
+### Bug Fixes
+
+* ensure GitHub releases are created and displayed ([4ca65ac](https://github.com/hominiome/hominio/commit/4ca65acbac971df73a60911a923aaf045531f01f))
+
 ## [0.5.11](https://github.com/hominiome/hominio/compare/v0.5.10...v0.5.11) (2025-11-17)
 
 
