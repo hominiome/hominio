@@ -47,9 +47,14 @@ Versions are automatically synced across **all packages** in the monorepo:
 
 1. Make changes
 2. Stage changes: `git add .`
-3. Commit with conventional format: `git commit -m "feat: description"`
+3. Commit with conventional format:
+   - **Most changes**: `git commit -m "fix: description"` (patch bump)
+   - **New features**: `git commit -m "feat: description"` (minor bump - use sparingly!)
+   - **Maintenance**: `git commit -m "chore: description"` (no bump)
 4. Push: `git push`
 5. Run semantic-release: `bun run release` (or let CI do it)
+
+**Remember:** Most commits should be `fix:` or `chore:`. Only use `feat:` for significant new user-facing features.
 
 ### Testing Before Release
 
@@ -147,16 +152,84 @@ See `.github/workflows/README.md` for detailed setup instructions.
 
 ## Quick Reference
 
-**Want a Minor Bump (0.1.0 → 0.2.0)?**
+### When to Use `feat:` (Minor Bump - 0.1.0 → 0.2.0)
+
+**STRICT RULE: Only use `feat:` for significant, user-facing new features or capabilities.**
+
+**✅ Use `feat:` for:**
+- New user-facing features (e.g., "Add user profile page", "Add dark mode toggle")
+- New major functionality (e.g., "Add payment processing", "Add real-time notifications")
+- New API endpoints that expose new capabilities
+- Significant new integrations (e.g., "Add Stripe integration", "Add OAuth provider")
+
+**❌ DO NOT use `feat:` for:**
+- Bug fixes → Use `fix:`
+- Improvements to existing features → Use `fix:` or `perf:`
+- Refactoring → Use `refactor:` or `chore:`
+- Configuration changes → Use `chore:`
+- Dependency updates → Use `chore:`
+- Internal improvements → Use `fix:` or `chore:`
+- Migration scripts → Use `chore:` or `fix:`
+- Deployment fixes → Use `fix:` or `chore:`
+- Documentation → Use `docs:`
+- Styling/UI tweaks → Use `fix:` or `style:`
+
+**Example:**
 ```bash
-git commit -m "feat: your new feature"
+# ✅ Correct - New user-facing feature
+git commit -m "feat: add user profile editing page"
+
+# ❌ Wrong - Should be fix:
+git commit -m "feat: fix login button styling"  # Should be "fix: login button styling"
+git commit -m "feat: improve error handling"    # Should be "fix: improve error handling"
+git commit -m "feat: add migration script"       # Should be "chore: add migration script"
 ```
 
-**Want a Patch Bump (0.1.0 → 0.1.1)?**
+### When to Use `fix:` (Patch Bump - 0.1.0 → 0.1.1)
+
+**Use `fix:` for most changes - this is the DEFAULT for improvements and bug fixes.**
+
+**✅ Use `fix:` for:**
+- Bug fixes
+- Performance improvements
+- Security fixes
+- Error handling improvements
+- UI/UX improvements
+- Styling fixes
+- Configuration fixes
+- Deployment fixes
+- Migration fixes
+- Any improvement to existing functionality
+
+**Example:**
 ```bash
-git commit -m "fix: your bug fix"
-# OR
-git commit -m "perf: your performance improvement"
+git commit -m "fix: resolve login button styling issue"
+git commit -m "fix: improve error messages"
+git commit -m "fix: optimize database queries"
+git commit -m "fix: correct CORS configuration"
+git commit -m "fix: update migration script to use correct schema"
+```
+
+### When to Use `chore:` (No Version Bump)
+
+**Use `chore:` for maintenance tasks that don't affect functionality.**
+
+**✅ Use `chore:` for:**
+- Dependency updates
+- Build configuration changes
+- CI/CD workflow updates
+- Documentation updates (unless user-facing)
+- Code cleanup/refactoring (internal only)
+- Adding/updating scripts
+- Environment variable changes
+- Deployment configuration
+
+**Example:**
+```bash
+git commit -m "chore: update dependencies"
+git commit -m "chore: update GitHub Actions workflow"
+git commit -m "chore: add migration script"
+git commit -m "chore: update .env.example"
 ```
 
 **Want a Major Bump (0.1.0 → 1.0.0)?**
