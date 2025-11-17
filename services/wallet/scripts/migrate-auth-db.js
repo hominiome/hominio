@@ -18,9 +18,9 @@
 import { Kysely, sql } from "kysely";
 import { NeonDialect } from "kysely-neon";
 import { neon } from "@neondatabase/serverless";
-import { env } from "$env/dynamic/private";
 
-const DATABASE_URL = env.WALLET_POSTGRES_SECRET;
+// Use process.env for standalone script execution (not SvelteKit context)
+const DATABASE_URL = process.env.WALLET_POSTGRES_SECRET;
 
 if (!DATABASE_URL) {
   console.error("❌ WALLET_POSTGRES_SECRET environment variable is required");
