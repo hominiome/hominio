@@ -73,5 +73,6 @@ jobs:
       - name: Check deployment status
         run: |
           flyctl status --app hominio-wallet
-          flyctl logs --app hominio-wallet --limit 50
+          echo "📋 Recent logs:"
+          flyctl logs --app hominio-wallet --no-tail | tail -50
 
