@@ -20,7 +20,7 @@
 	// Reactive check: if already signed in, redirect
 	$effect(() => {
 		if ($session.data?.user) {
-			const redirectTo = $page.url.searchParams.get('redirect') || '/mini-apps';
+			const redirectTo = $page.url.searchParams.get('redirect') || '/me';
 			goto(redirectTo, { replaceState: true });
 		}
 	});
@@ -28,7 +28,7 @@
 	async function signInWithGoogle() {
 		signingIn = true;
 		try {
-			const redirectPath = $page.url.searchParams.get('redirect') || '/mini-apps';
+			const redirectPath = $page.url.searchParams.get('redirect') || '/me';
 			const appUrl = getAppServiceUrl();
 			// Use full URL for callback since BetterAuth runs on wallet service (4201)
 			// but needs to redirect back to app service (4202)

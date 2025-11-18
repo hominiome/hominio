@@ -3,8 +3,8 @@
 	import { goto } from '$app/navigation';
 
 	onMount(() => {
-		// Redirect to mini apps manager
-		goto('/mini-apps');
+		// Redirect to /me (projects page)
+		goto('/me');
 	});
 </script>
 

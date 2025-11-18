@@ -7,11 +7,11 @@
 	const session = authClient.useSession();
 
 	function goHome() {
-		goto('/mini-apps');
+		goto('/me');
 	}
 
 	function goBack() {
-		window.history.length > 1 ? window.history.back() : goto('/mini-apps');
+		window.history.length > 1 ? window.history.back() : goto('/me');
 	}
 
 	let signingOut = $state(false);
@@ -27,8 +27,8 @@
 		}
 	}
 
-	const isHome = $derived($page.url.pathname === '/mini-apps');
-	const isViewer = $derived($page.url.pathname.startsWith('/mini-apps/') && $page.url.pathname !== '/mini-apps');
+	const isHome = $derived($page.url.pathname === '/me');
+	const isViewer = $derived(false); // No viewer pages anymore
 	const isAuthenticated = $derived($session.data?.user);
 </script>
 
@@ -43,24 +43,6 @@
 	>
 		<img src="/logo_clean.png" alt="Home" class="h-7 w-7 object-contain" />
 	</button>
-	{#if isViewer}
-		<button
-			class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-white/70 transition-all duration-200 hover:bg-white/10 hover:text-white/90 active:scale-95"
-			onclick={goBack}
-			aria-label="Back"
-		>
-			<svg
-				width="18"
-				height="18"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-			>
-				<polyline points="15 18 9 12 15 6" />
-			</svg>
-		</button>
-	{/if}
 	{#if isAuthenticated}
 		<button
 			class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-white/70 transition-all duration-200 hover:bg-white/10 hover:text-white/90 active:scale-95"
