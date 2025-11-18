@@ -1,3 +1,10 @@
+## [0.6.1](https://github.com/hominiome/hominio/compare/v0.6.0...v0.6.1) (2025-11-18)
+
+
+### Bug Fixes
+
+* use WALLET_POSTGRES_SECRET and add --change-db flag for Zero sync ([0a48329](https://github.com/hominiome/hominio/commit/0a483294ce3d7bf4dc4a5e1ed21096ae1a18a08b))
+
 # [0.6.0](https://github.com/hominiome/hominio/compare/v0.5.13...v0.6.0) (2025-11-18)
 
 
