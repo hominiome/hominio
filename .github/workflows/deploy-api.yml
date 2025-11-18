@@ -86,6 +86,7 @@ jobs:
             ZERO_POSTGRES_SECRET="${{ secrets.ZERO_POSTGRES_SECRET }}" \
             WALLET_POSTGRES_SECRET="${{ secrets.WALLET_POSTGRES_SECRET }}" \
             AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
+            GOOGLE_AI_API_KEY="${{ secrets.GOOGLE_AI_API_KEY }}" \
             GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
             GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
             ADMIN="${{ secrets.ADMIN }}" \
@@ -115,4 +116,3 @@ jobs:
             echo "⚠️  Certificate not yet issued. This is normal if DNS hasn't propagated yet."
             echo "   Certificate will be automatically provisioned once DNS CNAME record is configured."
           }
-

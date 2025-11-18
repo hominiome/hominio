@@ -17,9 +17,10 @@ Elysia + Bun server for Hominio monorepo. Handles Zero sync endpoints (get-queri
 
 Set these in Fly.io secrets and root `.env`:
 
-- `SECRET_ZERO_DEV_PG` - Postgres connection string (non-pooler, same as sync service)
+- `SECRET_ZERO_DEV_PG` or `ZERO_POSTGRES_SECRET` - Postgres connection string (non-pooler, same as sync service)
 - `AUTH_SECRET` - Better Auth secret (same as wallet service)
-- `SECRET_NEON_PG_AUTH` - Auth database connection (same as wallet service)
+- `SECRET_NEON_PG_AUTH` or `WALLET_POSTGRES_SECRET` - Auth database connection (same as wallet service)
+- `GOOGLE_AI_API_KEY` - Google Gemini API key (required for voice API)
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` - OAuth (optional)
 - `ADMIN` - Admin user IDs (comma-separated)
 
@@ -28,6 +29,9 @@ Set these in Fly.io secrets and root `.env`:
 ### Zero Sync Endpoints
 - `POST /api/v0/zero/get-queries` - Zero synced queries endpoint
 - `POST /api/v0/zero/push` - Zero custom mutators endpoint
+
+### Voice API Endpoints
+- `WS /api/v0/voice/live` - Google Live Voice API WebSocket proxy (requires authentication)
 
 ### API Endpoints
 - `GET /api/v0/projects` - Returns list of projects

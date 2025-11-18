@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { auth } from "./lib/auth";
 import { zeroRoutes } from "./routes/v0/zero";
+import { voiceRoutes } from "./routes/v0/voice";
 import { projects } from "./routes/v0/projects";
 import { isTrustedOrigin } from "./lib/utils/trusted-origins";
 
@@ -11,6 +12,8 @@ const app = new Elysia()
   // API service only verifies cookies (read-only), doesn't handle authentication
   // Zero sync endpoints (they handle CORS manually)
   .use(zeroRoutes)
+  // Voice API endpoints (WebSocket)
+  .use(voiceRoutes)
   // API endpoints - handle CORS manually (like hominio-me)
   .group("/api/v0", (app) => 
     app

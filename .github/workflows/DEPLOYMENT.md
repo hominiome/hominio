@@ -33,6 +33,7 @@ All secrets must be set in the **PRODUCTION** environment in GitHub:
 - `ZERO_POSTGRES_SECRET` - PostgreSQL connection string (same as sync service)
 - `AUTH_POSTGRES_SECRET` - Better Auth database connection
 - `AUTH_SECRET` - Better Auth secret (must match wallet service)
+- `GOOGLE_AI_API_KEY` - Google Gemini API key (required for voice API)
 - `GOOGLE_CLIENT_ID` - Google OAuth client ID (optional)
 - `GOOGLE_CLIENT_SECRET` - Google OAuth client secret (optional)
 - `ADMIN` - Admin user ID (optional)
