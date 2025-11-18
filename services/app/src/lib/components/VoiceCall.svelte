@@ -4,6 +4,7 @@
 
 	// Connection state
 	let status = $state<'disconnected' | 'connecting' | 'connected'>('disconnected');
+	let aiState = $state<'listening' | 'thinking' | 'speaking' | 'idle'>('idle');
 	let error = $state<string | null>(null);
 	let ws = null;
 	let googleSession = null;
@@ -209,6 +210,9 @@
 			
 			source.addEventListener('ended', () => {
 				playingSources.delete(source);
+				if (playingSources.size === 0 && status === 'connected') {
+					aiState = 'listening';
+				}
 			});
 
 			source.start(nextStartTime);
@@ -250,24 +254,32 @@
 						case 'status':
 							if (message.status === 'connected') {
 								status = 'connected';
+								aiState = 'listening';
 								// Google Live API is ready - start recording now
 								if (!isRecording) {
 									startRecording();
 								}
 							} else if (message.status === 'disconnected') {
 								status = 'disconnected';
+								aiState = 'idle';
 								stopRecording();
 							}
 							break;
 
 						case 'audio':
 							// Play received audio
+							aiState = 'speaking';
 							playAudio(message.data, 24000);
+							break;
+
+						case 'toolCall':
+							aiState = 'thinking';
 							break;
 
 						case 'error':
 							console.error('[VoiceCall] Server error:', message.message);
 							error = message.message;
+							aiState = 'idle';
 							break;
 
 						case 'serverContent':
@@ -278,6 +290,13 @@
 								});
 								playingSources.clear();
 								nextStartTime = 0;
+								aiState = 'listening';
+							}
+							// Check for turn completion (model finished generating)
+							if (message.data?.turnComplete) {
+								// We stay in 'speaking' if audio is still playing, 
+								// but logically the AI finished its turn.
+								// The audio ended listener will handle transition back to listening.
 							}
 							break;
 					}
@@ -323,6 +342,7 @@
 		}
 
 		status = 'disconnected';
+		aiState = 'idle';
 		error = null;
 	}
 
@@ -373,11 +393,19 @@
 						: 'bg-gray-400'}"
 			></div>
 			<span class="text-sm text-white/70">
-				{status === 'connected'
-					? 'Connected'
-					: status === 'connecting'
-						? 'Connecting...'
-						: 'Disconnected'}
+				{#if status === 'connected'}
+					{#if aiState === 'speaking'}
+						<span class="text-green-400 font-medium">Speaking...</span>
+					{:else if aiState === 'thinking'}
+						<span class="text-blue-400 font-medium animate-pulse">Thinking...</span>
+					{:else}
+						Listening...
+					{/if}
+				{:else if status === 'connecting'}
+					Connecting...
+				{:else}
+					Disconnected
+				{/if}
 			</span>
 		</div>
 

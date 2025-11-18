@@ -88,6 +88,16 @@ export const voiceLiveHandler = {
                         },
                     },
                 },
+                tools: [
+                    {
+                        functionDeclarations: [
+                            {
+                                name: "get_name",
+                                description: "Get the name of the assistant",
+                            }
+                        ]
+                    }
+                ],
             };
 
             const session = await ai.live.connect({
@@ -116,11 +126,49 @@ export const voiceLiveHandler = {
                                         mimeType: message.serverContent.modelTurn.parts[0].inlineData.mimeType || "audio/pcm;rate=24000",
                                     }));
                                 } else {
-                                    // Other server content (turn complete, etc.)
-                                    ws.send(JSON.stringify({
-                                        type: "serverContent",
-                                        data: message.serverContent,
-                                    }));
+                                    // Check for functionCall inside serverContent (Multimodal Live API structure)
+                                    const parts = message.serverContent?.modelTurn?.parts || [];
+                                    const functionCallPart = parts.find((p: any) => p.functionCall);
+
+                                    if (functionCallPart) {
+                                        // Handle function call from serverContent
+                                        const functionCall = functionCallPart.functionCall;
+                                        console.log("[voice/live] Handling function call:", JSON.stringify(functionCall));
+                                        
+                                        ws.send(JSON.stringify({
+                                            type: "toolCall",
+                                            data: functionCall,
+                                        }));
+
+                                        let response = { error: "Unknown tool" };
+                                        if (functionCall.name === "get_name") {
+                                            response = { name: "hominio" };
+                                        }
+
+                                        // Construct tool response
+                                        // For Multimodal Live, we send toolResponse in clientContent
+                                        // Note: sendToolResponse is not directly on session in some versions, 
+                                        // or requires specific structure. 
+                                        // Based on reference, sendToolResponse takes { functionResponses: [...] }
+                                        
+                                        console.log("[voice/live] Sending tool response:", JSON.stringify(response));
+                                        
+                                        session.sendToolResponse({
+                                            functionResponses: [
+                                                {
+                                                    id: functionCall.id,
+                                                    name: functionCall.name,
+                                                    response: { result: response } // Wrap in 'result' object as per reference
+                                                }
+                                            ]
+                                        });
+                                    } else {
+                                        // Other server content (turn complete, etc.)
+                                        ws.send(JSON.stringify({
+                                            type: "serverContent",
+                                            data: message.serverContent,
+                                        }));
+                                    }
                                 }
                             } else if (message.data) {
                                 // Direct audio data chunk (fallback)
@@ -135,6 +183,36 @@ export const voiceLiveHandler = {
                                     type: "serverContent",
                                     data: { setupComplete: message.setupComplete },
                                 }));
+                            } else if (message.toolCall) {
+                                // Handle top-level toolCall (if SDK abstracts it this way)
+                                console.log("[voice/live] Received top-level tool call:", JSON.stringify(message.toolCall));
+                                
+                                // Notify frontend
+                                ws.send(JSON.stringify({
+                                    type: "toolCall",
+                                    data: message.toolCall,
+                                }));
+
+                                const functionCalls = message.toolCall.functionCalls;
+                                const responses = functionCalls.map((fc: any) => {
+                                    if (fc.name === "get_name") {
+                                        return {
+                                            name: "get_name",
+                                            response: { result: { name: "hominio" } }, // Wrap in result
+                                            id: fc.id 
+                                        };
+                                    }
+                                    return {
+                                        name: fc.name,
+                                        response: { result: { error: "Unknown tool" } }, // Wrap in result
+                                        id: fc.id
+                                    };
+                                });
+
+                                console.log("[voice/live] Sending top-level tool response:", JSON.stringify(responses));
+                                session.sendToolResponse({
+                                    functionResponses: responses
+                                });
                             }
                         } catch (error) {
                             console.error("[voice/live] Error forwarding message to client:", error);
