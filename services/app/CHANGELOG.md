@@ -1,3 +1,12 @@
+## [0.5.13](https://github.com/hominiome/hominio/compare/v0.5.12...v0.5.13) (2025-11-18)
+
+
+### Bug Fixes
+
+* add @semantic-release/npm plugin to match working v0.1.4 config ([79cf5f1](https://github.com/hominiome/hominio/commit/79cf5f1d9c6175032b1ce81a72bcb5d9abfd0d55))
+* add npm plugin to releaserc config to match v0.1.4 ([072a133](https://github.com/hominiome/hominio/commit/072a1339c4db45213153da9409052f6aa816d986))
+* simplify GitHub plugin config to match working v0.1.4 setup ([3904f4c](https://github.com/hominiome/hominio/commit/3904f4c7ac1f10a20c10ba4b3aa38a4efd81b216))
+
 ## [0.5.12](https://github.com/hominiome/hominio/compare/v0.5.11...v0.5.12) (2025-11-17)
 
 
