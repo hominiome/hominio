@@ -1,3 +1,10 @@
+## [0.6.3](https://github.com/hominiome/hominio/compare/v0.6.2...v0.6.3) (2025-11-18)
+
+
+### Bug Fixes
+
+* normalize API domain to prevent double https:// protocol ([3326f7c](https://github.com/hominiome/hominio/commit/3326f7c1c8bdda6b55b5409d38c444b5c66b0a30))
+
 ## [0.6.2](https://github.com/hominiome/hominio/compare/v0.6.1...v0.6.2) (2025-11-18)
 
 
