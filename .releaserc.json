@@ -85,10 +85,7 @@
             {
                 "successComment": false,
                 "releasedLabels": false,
-                "assets": [],
-                "draft": false,
-                "generateNotes": true,
-                "addReleases": "bottom"
+                "assets": []
             }
         ]
     ]
