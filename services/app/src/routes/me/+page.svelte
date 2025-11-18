@@ -8,9 +8,11 @@
 	/** @type {string | null} */
 	let error = $state(null);
 
-	// Get API URL from environment or default to localhost:4204
+	// Get API URL from environment or default based on environment
 	function getApiUrl() {
-		const apiDomain = env.PUBLIC_DOMAIN_API || 'localhost:4204';
+		// In production, use api.hominio.me, in development use localhost:4204
+		const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.0.0.1');
+		const apiDomain = env.PUBLIC_DOMAIN_API || (isProduction ? 'api.hominio.me' : 'localhost:4204');
 		const protocol = apiDomain.startsWith('localhost') || apiDomain.startsWith('127.0.0.1') ? 'http' : 'https';
 		return `${protocol}://${apiDomain}`;
 	}

@@ -39,6 +39,13 @@ All secrets must be set in the **PRODUCTION** environment in GitHub:
 - `PUBLIC_DOMAIN_API` - API domain (defaults to `api.hominio.me`)
 - `PUBLIC_DOMAIN_SYNC` - Sync domain (defaults to `sync.hominio.me`)
 
+### App Service Secrets
+- `PUBLIC_DOMAIN_ROOT` - Root domain (e.g., `hominio.me`)
+- `PUBLIC_DOMAIN_APP` - App domain (e.g., `app.hominio.me`)
+- `PUBLIC_DOMAIN_WALLET` - Wallet domain (e.g., `wallet.hominio.me`)
+- `PUBLIC_DOMAIN_API` - API domain (e.g., `api.hominio.me`) - **Required for frontend to connect to API**
+- `PUBLIC_DOMAIN_SYNC` - Sync domain (e.g., `sync.hominio.me`)
+
 ## Deployment Flow
 
 1. **Release Workflow** (`release.yml`)
