@@ -1,3 +1,10 @@
+## [0.7.1](https://github.com/hominiome/hominio/compare/v0.7.0...v0.7.1) (2025-11-19)
+
+
+### Bug Fixes
+
+* centralize auth verification and move sign-in to wallet service ([efea7a1](https://github.com/hominiome/hominio/commit/efea7a19d38df37fb19fa028a17d04172faeec69))
+
 # [0.7.0](https://github.com/hominiome/hominio/compare/v0.6.3...v0.7.0) (2025-11-19)
 
 
