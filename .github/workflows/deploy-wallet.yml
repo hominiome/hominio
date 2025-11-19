@@ -101,8 +101,8 @@ jobs:
 
       - name: Deploy wallet service
         run: |
-          cd services/wallet
-          flyctl deploy --remote-only --app hominio-wallet
+          # Build from monorepo root to properly resolve workspace dependencies
+          flyctl deploy --remote-only --app hominio-wallet --config services/wallet/fly.toml --dockerfile services/wallet/Dockerfile
 
       - name: Check deployment status
         run: |
