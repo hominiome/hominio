@@ -85,12 +85,12 @@ async function main() {
   console.log(`   Push URL: ${env.ZERO_PUSH_URL}\n`);
 
   // Spawn zero-cache-dev using npx to ensure proper native module resolution
-  // Run from sync service directory where zero-schema.ts is located
+  // Use shared schema from @hominio/zero library
   const zeroCacheDev = spawn(
     'npx',
     [
       'zero-cache-dev',
-      '--schema-path=./zero-schema.ts',
+      '--schema-path=../../libs/hominio-zero/src/schema.ts',
       `--admin-password=${env.ZERO_AUTH_SECRET}`,
       '--mutate-forward-cookies',
       '--get-queries-forward-cookies',

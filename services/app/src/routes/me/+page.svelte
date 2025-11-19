@@ -1,6 +1,7 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
-	import { env } from '$env/dynamic/public';
+	import { getZeroContext } from '$lib/zero-utils';
+	import { allProjects } from '@hominio/zero';
 	import VoiceCall from '$lib/components/VoiceCall.svelte';
 
 	/** @type {Array<{id: string, title: string, description: string | null, createdAt: string, userId: string}>} */
@@ -9,45 +10,54 @@
 	/** @type {string | null} */
 	let error = $state(null);
 
-	// Get API URL from environment or default based on environment
-	function getApiUrl() {
-		// In production, use api.hominio.me, in development use localhost:4204
-		const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.0.0.1');
-		let apiDomain = env.PUBLIC_DOMAIN_API || (isProduction ? 'api.hominio.me' : 'localhost:4204');
-		
-		// Normalize domain: remove protocol if present (handles both https://api.hominio.me and api.hominio.me)
-		apiDomain = apiDomain.replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '');
-		
-		// Determine protocol based on domain
-		const protocol = apiDomain.startsWith('localhost') || apiDomain.startsWith('127.0.0.1') ? 'http' : 'https';
-		return `${protocol}://${apiDomain}`;
-	}
-
-	async function fetchProjects() {
-		loading = true;
-		error = null;
-		try {
-			const apiUrl = getApiUrl();
-			const response = await fetch(`${apiUrl}/api/v0/projects`, {
-				credentials: 'include', // Include cookies for authentication
-			});
-
-			if (!response.ok) {
-				throw new Error(`Failed to fetch projects: ${response.statusText}`);
-			}
-
-			const data = await response.json();
-			projects = data.projects || [];
-		} catch (err) {
-			console.error('Error fetching projects:', err);
-			error = err instanceof Error ? err.message : 'Failed to load projects';
-		} finally {
-			loading = false;
-		}
-	}
+	// Get Zero context from layout
+	const zeroContext = getZeroContext();
 
 	onMount(() => {
-		fetchProjects();
+		if (!zeroContext) {
+			console.error('Zero context not found');
+			loading = false;
+			error = 'Zero sync is not available';
+			return;
+		}
+
+		let projectsView: any;
+
+		(async () => {
+			// Wait for Zero to be ready
+			while (!zeroContext.isReady() || !zeroContext.getInstance()) {
+				await new Promise((resolve) => setTimeout(resolve, 100));
+			}
+			const zero = zeroContext.getInstance();
+
+			if (!zero) {
+				loading = false;
+				error = 'Failed to initialize Zero client';
+				return;
+			}
+
+			try {
+				// Query all projects using synced query - data is already cached locally!
+				const projectsQuery = allProjects();
+				projectsView = zero.materialize(projectsQuery);
+
+				projectsView.addListener((data: any) => {
+					const newProjects = Array.from(data || []);
+					projects = newProjects;
+					// Set loading to false IMMEDIATELY - ZeroDB data is already available locally
+					loading = false;
+					error = null;
+				});
+			} catch (err) {
+				console.error('Error setting up Zero query:', err);
+				error = err instanceof Error ? err.message : 'Failed to load projects';
+				loading = false;
+			}
+		})();
+
+		return () => {
+			if (projectsView) projectsView.destroy();
+		};
 	});
 </script>
 
@@ -69,12 +79,6 @@
 	{:else if error}
 		<div class="relative z-10 py-12 text-center">
 			<p class="m-0 text-base text-yellow-400">{error}</p>
-			<button
-				onclick={fetchProjects}
-				class="mt-4 rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm text-white/90 transition-colors hover:bg-white/10"
-			>
-				Retry
-			</button>
 		</div>
 	{:else if projects.length === 0}
 		<div class="relative z-10 py-12 text-center text-base text-white/60">

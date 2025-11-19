@@ -1,8 +1,7 @@
 import { PushProcessor } from '@rocicorp/zero/server';
 import { zeroNodePg } from '@rocicorp/zero/server/adapters/pg';
-import { schema } from '../../../zero-schema';
+import { schema, createMutators } from '@hominio/zero';
 import { extractAuthData } from '../../../lib/auth-context';
-import { createMutators } from '../../../lib/mutators';
 import { createServerMutators } from '../../../lib/mutators.server';
 import { getZeroDbPool } from '../../../lib/db';
 import { buildCorsHeaders } from '../../../lib/utils/cors-headers';

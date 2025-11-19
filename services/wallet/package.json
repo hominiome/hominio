@@ -5,14 +5,14 @@
 	"type": "module",
 	"scripts": {
 		"start": "bun build/index.js",
-		"dev": "vite dev",
+		"dev": "bun run scripts/dev.js",
+		"dev:direct": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
-		"migrate:auth": "bunx @better-auth/cli migrate --config auth.migrate.ts --yes",
-		"migrate:auth:legacy": "bun scripts/migrate-auth-db.js"
+		"migrate:auth": "bunx @better-auth/cli migrate --config auth.migrate.ts --yes"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.4.0",
