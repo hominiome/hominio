@@ -55,8 +55,35 @@ export const POST: RequestHandler = async ({ request }) => {
         );
 
         // Build redirect URL to wallet approval page
-        const walletDomain = env.PUBLIC_DOMAIN_WALLET || 'localhost:4201';
-        const protocol = walletDomain.startsWith('localhost') ? 'http' : 'https';
+        // Use env var or derive from request origin in production
+        let walletDomain = env.PUBLIC_DOMAIN_WALLET;
+        if (!walletDomain) {
+            // Try to derive from request origin
+            const origin = request.headers.get('origin') || request.headers.get('referer');
+            if (origin) {
+                try {
+                    const originUrl = new URL(origin);
+                    const hostname = originUrl.hostname;
+                    // If origin is from wallet service, use it; otherwise construct wallet domain
+                    if (hostname.includes('wallet.') || hostname === 'wallet.hominio.me') {
+                        walletDomain = hostname;
+                    } else if (hostname.startsWith('app.')) {
+                        walletDomain = hostname.replace('app.', 'wallet.');
+                    } else {
+                        walletDomain = `wallet.${hostname.replace(/^www\./, '')}`;
+                    }
+                } catch {
+                    // Invalid origin, fall back to default
+                    walletDomain = 'wallet.hominio.me';
+                }
+            } else {
+                // No origin header, use production default
+                walletDomain = 'wallet.hominio.me';
+            }
+        }
+        // Remove protocol if present
+        walletDomain = walletDomain.replace(/^https?:\/\//, '');
+        const protocol = walletDomain.startsWith('localhost') || walletDomain.startsWith('127.0.0.1') ? 'http' : 'https';
         const redirectUrl = `${protocol}://${walletDomain}/capabilities/requests/${requestId}${callback_url ? `?callback=${encodeURIComponent(callback_url)}` : ''}`;
 
         return api.json({

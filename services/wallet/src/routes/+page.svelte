@@ -22,18 +22,69 @@
 			
 			// Get trusted origins from environment (matches server-side trusted origins)
 			const env = import.meta.env;
-			const trustedOrigins = [
-				env.PUBLIC_DOMAIN_ROOT || 'localhost:4200',
-				env.PUBLIC_DOMAIN_APP || 'localhost:4202',
-				env.PUBLIC_DOMAIN_WALLET || 'localhost:4201',
-				env.PUBLIC_DOMAIN_SYNC || 'localhost:4203',
-				env.PUBLIC_DOMAIN_API || 'localhost:4204',
-			].map(domain => {
-				if (domain.startsWith('http://') || domain.startsWith('https://')) {
-					return domain;
+			const isProduction = browser && window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.0.0.1');
+			
+			// Build trusted origins array - use env vars or derive from current location
+			const domains: string[] = [];
+			
+			// Add domains from env vars if set, otherwise derive from current location in production
+			if (env.PUBLIC_DOMAIN_ROOT) {
+				domains.push(env.PUBLIC_DOMAIN_ROOT);
+			} else if (isProduction) {
+				const hostname = window.location.hostname;
+				if (hostname.startsWith('www.')) {
+					domains.push(hostname.replace('www.', ''));
+				} else {
+					domains.push(hostname);
 				}
-				const protocol = domain.startsWith('localhost') || domain.startsWith('127.0.0.1') ? 'http' : 'https';
-				return `${protocol}://${domain}`;
+			} else {
+				domains.push('localhost:4200');
+			}
+			
+			if (env.PUBLIC_DOMAIN_APP) {
+				domains.push(env.PUBLIC_DOMAIN_APP);
+			} else if (isProduction) {
+				const hostname = window.location.hostname;
+				domains.push(hostname.startsWith('app.') ? hostname : `app.${hostname.replace(/^www\./, '')}`);
+			} else {
+				domains.push('localhost:4202');
+			}
+			
+			if (env.PUBLIC_DOMAIN_WALLET) {
+				domains.push(env.PUBLIC_DOMAIN_WALLET);
+			} else if (isProduction) {
+				const hostname = window.location.hostname;
+				domains.push(hostname.startsWith('wallet.') ? hostname : `wallet.${hostname.replace(/^www\./, '')}`);
+			} else {
+				domains.push('localhost:4201');
+			}
+			
+			if (env.PUBLIC_DOMAIN_SYNC) {
+				domains.push(env.PUBLIC_DOMAIN_SYNC);
+			} else if (isProduction) {
+				const hostname = window.location.hostname;
+				domains.push(hostname.startsWith('sync.') ? hostname : `sync.${hostname.replace(/^www\./, '')}`);
+			} else {
+				domains.push('localhost:4203');
+			}
+			
+			if (env.PUBLIC_DOMAIN_API) {
+				domains.push(env.PUBLIC_DOMAIN_API);
+			} else if (isProduction) {
+				const hostname = window.location.hostname;
+				domains.push(hostname.startsWith('api.') ? hostname : `api.${hostname.replace(/^www\./, '')}`);
+			} else {
+				domains.push('localhost:4204');
+			}
+			
+			const trustedOrigins = domains.map(domain => {
+				// Remove protocol if present
+				const cleanDomain = domain.replace(/^https?:\/\//, '');
+				if (cleanDomain.startsWith('http://') || cleanDomain.startsWith('https://')) {
+					return cleanDomain;
+				}
+				const protocol = cleanDomain.startsWith('localhost') || cleanDomain.startsWith('127.0.0.1') ? 'http' : 'https';
+				return `${protocol}://${cleanDomain}`;
 			});
 			
 			const isTrusted = trustedOrigins.some(origin => {

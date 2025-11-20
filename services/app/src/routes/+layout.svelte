@@ -128,13 +128,45 @@
 		// If not authenticated, redirect to wallet service sign-in
 		if (!$session.data?.user) {
 			const redirectUrl = $page.url.pathname + $page.url.search;
-			const appDomain = import.meta.env.PUBLIC_DOMAIN_APP || 'localhost:4202';
+			
+			// Get app domain - use env var or derive from current location
+			const isProduction = browser && window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.0.0.1');
+			let appDomain = publicEnv.PUBLIC_DOMAIN_APP;
+			if (!appDomain) {
+				if (isProduction) {
+					// In production, use current hostname if env var not set
+					appDomain = window.location.hostname;
+				} else {
+					// Development fallback
+					appDomain = 'localhost:4202';
+				}
+			}
+			// Remove protocol if present
+			appDomain = appDomain.replace(/^https?:\/\//, '');
 			const protocol = appDomain.startsWith('localhost') || appDomain.startsWith('127.0.0.1') ? 'http' : 'https';
 			const appUrl = `${protocol}://${appDomain}`;
 			const callbackUrl = `${appUrl}${redirectUrl}`;
 			
-			// Redirect to wallet service with callback parameter
-			const walletDomain = import.meta.env.PUBLIC_DOMAIN_WALLET || 'localhost:4201';
+			// Get wallet domain - use env var or derive from current location
+			let walletDomain = publicEnv.PUBLIC_DOMAIN_WALLET;
+			if (!walletDomain) {
+				if (isProduction) {
+					// In production, construct wallet domain from app domain
+					// e.g., app.hominio.me -> wallet.hominio.me
+					const hostname = window.location.hostname;
+					if (hostname.startsWith('app.')) {
+						walletDomain = hostname.replace('app.', 'wallet.');
+					} else {
+						// Fallback: use wallet subdomain
+						walletDomain = `wallet.${hostname.replace(/^www\./, '')}`;
+					}
+				} else {
+					// Development fallback
+					walletDomain = 'localhost:4201';
+				}
+			}
+			// Remove protocol if present
+			walletDomain = walletDomain.replace(/^https?:\/\//, '');
 			const walletProtocol = walletDomain.startsWith('localhost') || walletDomain.startsWith('127.0.0.1') ? 'http' : 'https';
 			const walletUrl = `${walletProtocol}://${walletDomain}`;
 			window.location.href = `${walletUrl}?callback=${encodeURIComponent(callbackUrl)}`;

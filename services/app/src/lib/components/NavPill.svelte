@@ -36,10 +36,37 @@
 			
 			await authClient.signOut();
 			// Redirect to wallet service sign-in page
-			const walletDomain = import.meta.env.PUBLIC_DOMAIN_WALLET || 'localhost:4201';
+			const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.0.0.1');
+			
+			// Get wallet domain - use env var or derive from current location
+			let walletDomain = import.meta.env.PUBLIC_DOMAIN_WALLET;
+			if (!walletDomain) {
+				if (isProduction) {
+					// In production, construct wallet domain from app domain
+					const hostname = window.location.hostname;
+					if (hostname.startsWith('app.')) {
+						walletDomain = hostname.replace('app.', 'wallet.');
+					} else {
+						walletDomain = `wallet.${hostname.replace(/^www\./, '')}`;
+					}
+				} else {
+					walletDomain = 'localhost:4201';
+				}
+			}
+			walletDomain = walletDomain.replace(/^https?:\/\//, '');
 			const protocol = walletDomain.startsWith('localhost') || walletDomain.startsWith('127.0.0.1') ? 'http' : 'https';
 			const walletUrl = `${protocol}://${walletDomain}`;
-			const appDomain = import.meta.env.PUBLIC_DOMAIN_APP || 'localhost:4202';
+			
+			// Get app domain - use env var or derive from current location
+			let appDomain = import.meta.env.PUBLIC_DOMAIN_APP;
+			if (!appDomain) {
+				if (isProduction) {
+					appDomain = window.location.hostname;
+				} else {
+					appDomain = 'localhost:4202';
+				}
+			}
+			appDomain = appDomain.replace(/^https?:\/\//, '');
 			const appProtocol = appDomain.startsWith('localhost') || appDomain.startsWith('127.0.0.1') ? 'http' : 'https';
 			const appUrl = `${appProtocol}://${appDomain}`;
 			const callbackUrl = `${appUrl}/me`;
