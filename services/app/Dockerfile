@@ -12,7 +12,7 @@ COPY services/app/package.json /temp/dev/services/app/
 COPY libs/hominio-auth/ /temp/dev/libs/hominio-auth/
 COPY libs/hominio-zero/ /temp/dev/libs/hominio-zero/
 COPY libs/hominio-caps/ /temp/dev/libs/hominio-caps/
-RUN cd /temp/dev && bun install --frozen-lockfile --ignore-scripts
+RUN cd /temp/dev && bun install --ignore-scripts
 
 # Build the app
 FROM base AS build

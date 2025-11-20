@@ -11,7 +11,7 @@ COPY package.json bun.lock* /temp/dev/
 COPY services/wallet/package.json /temp/dev/services/wallet/
 COPY libs/hominio-auth/ /temp/dev/libs/hominio-auth/
 COPY libs/hominio-caps/ /temp/dev/libs/hominio-caps/
-RUN cd /temp/dev && bun install --frozen-lockfile --ignore-scripts
+RUN cd /temp/dev && bun install --ignore-scripts
 
 # Build the app
 FROM base AS build
