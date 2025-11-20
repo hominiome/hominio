@@ -8,11 +8,12 @@
 	});
 </script>
 
-<div
-	class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white"
->
-	<div
-		class="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-white/30 border-t-cyan-400"
-	></div>
-	<p class="m-0 text-lg">Loading...</p>
+<div class="min-h-screen bg-gradient-to-br from-[#f8f9fa] via-[#f2f4f6] to-[#e9ecef] flex flex-col items-center justify-center font-sans text-slate-800">
+	<!-- Decorative background blobs -->
+	<div class="fixed -top-[20%] -left-[10%] h-[500px] w-[500px] rounded-full bg-blue-200/20 blur-3xl filter pointer-events-none"></div>
+	<div class="fixed top-[20%] -right-[10%] h-[600px] w-[600px] rounded-full bg-purple-200/20 blur-3xl filter pointer-events-none"></div>
+	<div class="relative flex flex-col items-center">
+		<div class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-slate-800"></div>
+		<p class="mt-4 text-sm font-medium text-slate-500">Loading...</p>
+	</div>
 </div>

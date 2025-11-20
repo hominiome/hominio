@@ -143,27 +143,35 @@
 </script>
 
 {#if $session.isPending}
-	<div
-		class="flex flex-col justify-center items-center min-h-screen text-white bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900"
-	>
-		<div
-			class="mb-4 w-10 h-10 rounded-full border-4 animate-spin border-white/30 border-t-cyan-400"
-		></div>
-		<p class="m-0 text-lg">Checking authentication...</p>
+	<div class="min-h-screen bg-gradient-to-br from-[#f8f9fa] via-[#f2f4f6] to-[#e9ecef] flex flex-col items-center justify-center font-sans text-slate-800">
+		<!-- Decorative background blobs -->
+		<div class="fixed -top-[20%] -left-[10%] h-[500px] w-[500px] rounded-full bg-blue-200/20 blur-3xl filter pointer-events-none"></div>
+		<div class="fixed top-[20%] -right-[10%] h-[600px] w-[600px] rounded-full bg-purple-200/20 blur-3xl filter pointer-events-none"></div>
+		<div class="relative flex flex-col items-center">
+			<div class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-slate-800"></div>
+			<p class="mt-4 text-sm font-medium text-slate-500">Checking authentication...</p>
+		</div>
 	</div>
 {:else if !$session.data?.user}
 	<!-- Redirecting... (handled by $effect above) -->
-	<div
-		class="flex flex-col justify-center items-center min-h-screen text-white bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900"
-	>
-		<div
-			class="mb-4 w-10 h-10 rounded-full border-4 animate-spin border-white/30 border-t-cyan-400"
-		></div>
-		<p class="m-0 text-lg">Redirecting...</p>
+	<div class="min-h-screen bg-gradient-to-br from-[#f8f9fa] via-[#f2f4f6] to-[#e9ecef] flex flex-col items-center justify-center font-sans text-slate-800">
+		<!-- Decorative background blobs -->
+		<div class="fixed -top-[20%] -left-[10%] h-[500px] w-[500px] rounded-full bg-blue-200/20 blur-3xl filter pointer-events-none"></div>
+		<div class="fixed top-[20%] -right-[10%] h-[600px] w-[600px] rounded-full bg-purple-200/20 blur-3xl filter pointer-events-none"></div>
+		<div class="relative flex flex-col items-center">
+			<div class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-slate-800"></div>
+			<p class="mt-4 text-sm font-medium text-slate-500">Redirecting...</p>
+		</div>
 	</div>
 {:else}
-{@render children()}
+<div class="min-h-screen bg-gradient-to-br from-[#f8f9fa] via-[#f2f4f6] to-[#e9ecef] font-sans text-slate-800 antialiased">
+	<!-- Decorative background blobs -->
+	<div class="fixed -top-[20%] -left-[10%] h-[500px] w-[500px] rounded-full bg-blue-200/20 blur-3xl filter pointer-events-none"></div>
+	<div class="fixed top-[20%] -right-[10%] h-[600px] w-[600px] rounded-full bg-purple-200/20 blur-3xl filter pointer-events-none"></div>
+	<div class="fixed -bottom-[20%] left-[20%] h-[500px] w-[500px] rounded-full bg-emerald-200/20 blur-3xl filter pointer-events-none"></div>
+	{@render children()}
 	{#if $page.url.pathname !== '/'}
-<NavPill />
+	<NavPill />
 	{/if}
+</div>
 {/if}

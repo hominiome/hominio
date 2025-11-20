@@ -56,11 +56,11 @@
 </script>
 
 <nav
-	class="fixed bottom-0 left-1/2 z-[1000] mb-[env(safe-area-inset-bottom)] flex -translate-x-1/2 gap-2 rounded-full border border-white/10 bg-slate-900/80 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-[20px] backdrop-saturate-[180%] nav-pill"
+	class="fixed bottom-0 left-1/2 z-[1000] mb-[env(safe-area-inset-bottom)] flex -translate-x-1/2 gap-2 rounded-full border border-white/60 bg-white/40 p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-xl nav-pill"
 	style="margin-bottom: max(env(safe-area-inset-bottom), 1rem);"
 >
 	<button
-		class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-white/70 transition-all duration-200 hover:bg-white/10 hover:text-white/90 active:scale-95"
+		class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-slate-600 transition-all duration-200 hover:bg-white/60 hover:text-slate-900 active:scale-95"
 		onclick={goHome}
 		aria-label="Home"
 	>
@@ -68,14 +68,14 @@
 	</button>
 	{#if isAuthenticated}
 		<button
-			class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-white/70 transition-all duration-200 hover:bg-white/10 hover:text-white/90 active:scale-95"
+			class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-slate-600 transition-all duration-200 hover:bg-red-50/60 hover:text-red-600 active:scale-95"
 			onclick={handleSignOut}
 			disabled={signingOut}
 			aria-label="Sign Out"
 		>
 			{#if signingOut}
 				<div
-					class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+					class="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"
 				></div>
 			{:else}
 				<svg

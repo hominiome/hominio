@@ -424,25 +424,28 @@
 	});
 </script>
 
-<div class="relative z-10 mt-8 rounded-lg border border-white/10 bg-white/5 p-6 shadow-lg">
-	<h3 class="mb-4 text-lg font-semibold text-white/95">Voice Assistant</h3>
+<div class="relative z-10 mt-8 overflow-hidden rounded-3xl border border-white/60 bg-white/40 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+	<!-- Gradient Accent Header -->
+	<div class="-mx-6 -mt-6 mb-6 h-16 w-full bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 opacity-50"></div>
+	
+	<h3 class="mb-6 text-center text-xl font-bold tracking-tight text-slate-900">Voice Assistant</h3>
 
 	<div class="flex flex-col items-center gap-4">
 		<!-- Status indicator -->
 		<div class="flex items-center gap-2">
 			<div
 				class="h-3 w-3 rounded-full {status === 'connected'
-					? 'bg-green-400'
+					? 'bg-emerald-500'
 					: status === 'connecting'
 						? 'bg-yellow-400 animate-pulse'
-						: 'bg-gray-400'}"
+						: 'bg-slate-400'}"
 			></div>
-			<span class="text-sm text-white/70">
+			<span class="text-sm font-medium text-slate-600">
 				{#if status === 'connected'}
 					{#if aiState === 'speaking'}
-						<span class="text-green-400 font-medium">Speaking...</span>
+						<span class="text-emerald-600">Speaking...</span>
 					{:else if aiState === 'thinking'}
-						<span class="text-blue-400 font-medium animate-pulse">Thinking...</span>
+						<span class="text-blue-600 animate-pulse">Thinking...</span>
 					{:else}
 						Listening...
 					{/if}
@@ -456,8 +459,8 @@
 
 		<!-- Error message -->
 		{#if error}
-			<div class="w-full rounded-lg border border-yellow-400/30 bg-yellow-400/10 p-3">
-				<p class="text-sm text-yellow-400">{error}</p>
+			<div class="w-full rounded-2xl border border-yellow-100 bg-yellow-50/50 p-4 backdrop-blur-md">
+				<p class="text-sm font-medium text-yellow-600">{error}</p>
 			</div>
 		{/if}
 
@@ -465,9 +468,9 @@
 		<button
 			onclick={toggleCall}
 			disabled={status === 'connecting'}
-			class="rounded-lg border border-white/20 bg-white/10 px-6 py-3 text-base font-medium text-white/90 transition-colors hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed {status === 'connected'
-				? 'bg-red-500/20 hover:bg-red-500/30 border-red-400/30'
-				: 'bg-green-500/20 hover:bg-green-500/30 border-green-400/30'}"
+			class="group relative flex w-full items-center justify-center gap-2 rounded-xl border px-6 py-3 text-base font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-sm {status === 'connected'
+				? 'border-red-200 bg-red-50/50 text-red-600 hover:border-red-300 hover:bg-red-100/50 hover:shadow-sm'
+				: 'border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:shadow-md'}"
 		>
 			{status === 'connected' ? 'End Call' : 'Start Call'}
 		</button>
