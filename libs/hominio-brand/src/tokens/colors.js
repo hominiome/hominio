@@ -58,19 +58,32 @@ export const colors = {
 		secondary: '#475569', // text-slate-600
 		tertiary: '#64748b', // text-slate-500
 		muted: '#94a3b8', // text-slate-400
+		title: '#081b47', // Dark navy blue for titles/headings
 	},
-	// Brand navy/dark blue for primary buttons
+	// Brand navy/dark blue - darker marine blue (no purple tint)
 	brand: {
 		navy: {
-			// Navy dark blue - primary brand color
-			base: '#1e3a8a', // blue-800
-			light: '#3b82f6', // blue-500
-			dark: '#1e40af', // blue-900
+			// Navy dark blue - primary brand color (from hominio-me design)
+			50: '#f0f2f5',
+			100: '#e0e5eb',
+			200: '#c1cad7',
+			300: '#a2b0c3',
+			400: '#8395af',
+			500: '#081b47', // Primary navy - dark marine blue
+			600: '#061836',
+			700: '#051529',
+			800: '#040f1c',
+			900: '#030a14',
+			950: '#02050a',
+			// Legacy/compatibility
+			base: '#081b47', // Same as 500
+			light: '#8395af', // Same as 400
+			dark: '#040f1c', // Same as 800
 			glass: {
-				bg: 'rgba(30, 58, 138, 0.15)', // navy/15
-				bgHover: 'rgba(30, 58, 138, 0.25)', // navy/25
-				border: 'rgba(30, 58, 138, 0.3)', // navy/30
-				borderHover: 'rgba(30, 58, 138, 0.5)', // navy/50
+				bg: 'rgba(8, 27, 71, 0.15)', // navy/15
+				bgHover: 'rgba(8, 27, 71, 0.25)', // navy/25
+				border: 'rgba(8, 27, 71, 0.3)', // navy/30
+				borderHover: 'rgba(8, 27, 71, 0.5)', // navy/50
 			},
 		},
 	},

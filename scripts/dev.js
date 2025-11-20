@@ -25,6 +25,13 @@ const services = [
 	{ name: 'sync', filter: 'sync', port: 4203 },
 ];
 
+// Asset sync watcher (not a service, but runs alongside)
+const assetSyncProcess = {
+	name: 'brand-assets',
+	script: 'node',
+	args: ['libs/hominio-brand/scripts/sync-assets.js', '--watch'],
+};
+
 /**
  * Start a service as a child process
  */
@@ -55,6 +62,38 @@ function startService(service) {
 			console.error(`[${service.name}] Exited with code ${code}${signal ? ` (signal: ${signal})` : ''}`);
 			// If a service crashes, shut down all others
 			shutdown(code || 1);
+		}
+	});
+
+	processes.push(childProcess);
+	return childProcess;
+}
+
+/**
+ * Start the asset sync watcher
+ */
+function startAssetSync() {
+	console.log(`[${assetSyncProcess.name}] Starting asset sync watcher...`);
+
+	const childProcess = spawn(assetSyncProcess.script, assetSyncProcess.args, {
+		cwd: rootDir,
+		stdio: 'inherit',
+		shell: false,
+		env: { ...process.env },
+		detached: false,
+	});
+
+	childProcess.serviceName = assetSyncProcess.name;
+
+	childProcess.on('error', (error) => {
+		console.error(`[${assetSyncProcess.name}] Failed to start:`, error.message);
+		// Don't shutdown all services if asset sync fails
+	});
+
+	childProcess.on('exit', (code, signal) => {
+		if (code !== 0 && code !== null) {
+			console.error(`[${assetSyncProcess.name}] Exited with code ${code}${signal ? ` (signal: ${signal})` : ''}`);
+			// Don't shutdown all services if asset sync exits
 		}
 	});
 
@@ -182,6 +221,9 @@ function main() {
 	console.log('Press Ctrl+C to stop all services\n');
 
 	setupSignalHandlers();
+
+	// Start asset sync watcher first
+	startAssetSync();
 
 	// Start all services
 	services.forEach((service) => {

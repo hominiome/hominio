@@ -54,19 +54,36 @@ export default {
 						text: colors.alert.error.text,
 					},
 				},
-				brand: {
-					navy: {
-						base: colors.brand.navy.base,
-						light: colors.brand.navy.light,
-						dark: colors.brand.navy.dark,
-						glass: {
-							bg: colors.brand.navy.glass.bg,
-							bgHover: colors.brand.navy.glass.bgHover,
-							border: colors.brand.navy.glass.border,
-							borderHover: colors.brand.navy.glass.borderHover,
-						},
+			brand: {
+				navy: {
+					// Full navy scale (50-950)
+					50: colors.brand.navy['50'],
+					100: colors.brand.navy['100'],
+					200: colors.brand.navy['200'],
+					300: colors.brand.navy['300'],
+					400: colors.brand.navy['400'],
+					500: colors.brand.navy['500'], // Primary navy
+					600: colors.brand.navy['600'],
+					700: colors.brand.navy['700'],
+					800: colors.brand.navy['800'],
+					900: colors.brand.navy['900'],
+					950: colors.brand.navy['950'],
+					// Legacy/compatibility
+					base: colors.brand.navy.base,
+					light: colors.brand.navy.light,
+					dark: colors.brand.navy.dark,
+					glass: {
+						bg: colors.brand.navy.glass.bg,
+						bgHover: colors.brand.navy.glass.bgHover,
+						border: colors.brand.navy.glass.border,
+						borderHover: colors.brand.navy.glass.borderHover,
 					},
 				},
+			},
+			// Text colors
+			textColor: {
+				title: colors.text.title, // Dark navy for titles
+			},
 			},
 			boxShadow: {
 				'glass': shadows.glass.default,
@@ -82,9 +99,10 @@ export default {
 			blur: {
 				'3xl': blur.decorative['3xl'],
 			},
-			fontFamily: {
-				sans: ['Inter', 'system-ui', 'sans-serif'],
-			},
+		fontFamily: {
+			sans: ['Inter', 'system-ui', 'sans-serif'],
+			title: ['Shrikhand', 'cursive'],
+		},
 		},
 	},
 	plugins: [],

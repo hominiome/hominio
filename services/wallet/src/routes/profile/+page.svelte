@@ -85,37 +85,15 @@
 							{$session.data.user.email || 'No email provided'}
 						</div>
 
-						<div class="mt-8 grid gap-6 md:grid-cols-2">
-							<!-- ID Card -->
-							<GlassInfoCard>
-								<div class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-									<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-									</svg>
-									User ID
-								</div>
-								<div class="font-mono text-sm text-slate-700 break-all">
-									{$session.data.user.id}
-								</div>
-							</GlassInfoCard>
-
-							<!-- Role/Status Card (Placeholder) -->
-							<GlassInfoCard>
-								<div class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-									<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-									</svg>
-									Status
-								</div>
-								<div class="flex items-center gap-2">
-									<span class="relative flex h-2.5 w-2.5">
-										<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-										<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-									</span>
-									<span class="text-sm font-medium text-slate-700">Active</span>
-								</div>
-							</GlassInfoCard>
-						</div>
+					<!-- ID Card - Full Width -->
+					<div class="mt-8">
+						<GlassInfoCard>
+							<div class="flex items-center justify-between gap-4">
+								<span class="text-sm font-semibold uppercase tracking-wider text-slate-400">ID</span>
+								<span class="font-mono text-sm text-slate-700 break-all text-right">{$session.data.user.id}</span>
+							</div>
+						</GlassInfoCard>
+					</div>
 
 						<!-- Logout Button -->
 						<div class="mt-8 flex justify-center">

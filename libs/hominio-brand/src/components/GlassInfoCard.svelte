@@ -7,6 +7,7 @@
 	
 	let { 
 		class: className = '',
+		children,
 		...restProps
 	} = $props();
 	
@@ -16,6 +17,6 @@
 </script>
 
 <div class={classes} {...restProps}>
-	<slot />
+	{@render children()}
 </div>
 

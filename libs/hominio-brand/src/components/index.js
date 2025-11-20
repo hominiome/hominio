@@ -13,4 +13,6 @@ export { default as ProfileImage } from './ProfileImage.svelte';
 export { default as BackgroundBlobs } from './BackgroundBlobs.svelte';
 export { default as LoadingSpinner } from './LoadingSpinner.svelte';
 export { default as Alert } from './Alert.svelte';
+export { default as NavPill } from './NavPill.svelte';
+export { default as Footer } from './Footer.svelte';
 

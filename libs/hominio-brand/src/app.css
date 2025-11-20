@@ -1,8 +1,20 @@
 @import 'tailwindcss';
 
+/* Font Face Declarations */
+
+/* Shrikhand - Title Font */
+@font-face {
+	font-family: 'Shrikhand';
+	src: url('/brand/fonts/Shrikhand/Shrikhand-Regular.ttf') format('truetype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
 /* Base styles */
 :root {
 	--font-sans: 'Inter', system-ui, sans-serif;
+	--font-title: 'Shrikhand', cursive;
 }
 
 /* Liquid Glass utility classes - using regular CSS for Tailwind v4 compatibility */
@@ -42,13 +54,13 @@
 }
 
 .glass-button {
-	border-radius: 0.75rem; /* rounded-xl */
-	border: 1px solid rgba(255, 255, 255, 0.6);
-	background-color: rgba(255, 255, 255, 0.4);
+	border-radius: 9999px; /* rounded-full - fully rounded */
+	border: 1px solid rgba(255, 255, 255, 0.9);
+	background-color: rgba(255, 255, 255, 0.85); /* More solid - 85% opacity */
 	padding: 0.75rem 1.5rem; /* px-6 py-3 */
 	font-weight: 500; /* font-medium */
 	color: rgb(51, 65, 85); /* text-slate-700 */
-	box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+	box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.08);
 	backdrop-filter: blur(8px); /* backdrop-blur-sm */
 	transition: all 0.2s;
 	display: flex;
@@ -57,13 +69,14 @@
 }
 
 .glass-button:hover {
-	border-color: rgba(255, 255, 255, 0.8);
-	background-color: rgba(255, 255, 255, 0.5);
-	box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); /* shadow-md */
+	border-color: rgba(255, 255, 255, 1);
+	background-color: rgba(255, 255, 255, 0.95); /* Even more solid on hover */
+	box-shadow: 0 4px 8px -1px rgb(0 0 0 / 0.12);
+	transform: translateY(-1px);
 }
 
 .glass-button:active {
-	transform: scale(0.95);
+	transform: scale(0.98);
 }
 
 .glass-button:disabled {
@@ -73,28 +86,30 @@
 
 /* Navy variant for brand buttons */
 .glass-button-navy {
-	border-color: rgba(30, 58, 138, 0.4); /* border-brand-navy-glass-border */
-	background-color: rgba(30, 58, 138, 0.20); /* bg-brand-navy-glass-bg */
-	color: rgb(30, 64, 175); /* text-brand-navy-dark */
+	border-color: rgba(8, 27, 71, 0.9); /* More visible border */
+	background-color: rgba(8, 27, 71, 0.85); /* Solid navy - 85% opacity */
+	color: #ffffff; /* White text for better contrast */
 }
 
 .glass-button-navy:hover {
-	border-color: rgba(30, 58, 138, 0.5); /* border-brand-navy-glass-borderHover */
-	background-color: rgba(30, 58, 138, 0.30); /* bg-brand-navy-glass-bgHover */
-	box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); /* shadow-md */
+	border-color: rgba(8, 27, 71, 1);
+	background-color: rgba(8, 27, 71, 0.95); /* Even more solid on hover */
+	box-shadow: 0 4px 8px -1px rgb(0 0 0 / 0.12);
+	transform: translateY(-1px);
 }
 
 /* Danger variant */
 .glass-button-danger {
-	border-color: rgba(254, 202, 202, 0.6); /* border-red-200/60 */
-	background-color: rgba(254, 226, 226, 0.5); /* bg-red-50/50 */
+	border-color: rgba(220, 38, 38, 0.9);
+	background-color: rgba(254, 226, 226, 0.85); /* More solid - 85% opacity */
 	color: rgb(220, 38, 38); /* text-red-600 */
 }
 
 .glass-button-danger:hover {
-	border-color: rgba(252, 165, 165, 0.8); /* border-red-300/80 */
-	background-color: rgba(254, 226, 226, 0.6); /* bg-red-100/60 */
-	box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+	border-color: rgba(220, 38, 38, 1);
+	background-color: rgba(254, 226, 226, 0.95);
+	box-shadow: 0 4px 8px -1px rgb(0 0 0 / 0.12);
+	transform: translateY(-1px);
 }
 
 /* Background gradient */
@@ -215,5 +230,21 @@
 /* Dark theme utilities */
 .dark-border-bottom {
 	border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* border-white/10 */
+}
+
+/* Global Typography - Shrikhand Title Font with Brand Navy Color */
+h1, h2, h3, h4, h5, h6 {
+	font-family: var(--font-title);
+	font-weight: 400; /* Shrikhand Regular weight */
+	line-height: 1.2;
+	letter-spacing: 0.5px; /* Subtle character spacing */
+	color: #081b47; /* Brand navy - dark marine blue (not pure black) */
+}
+
+/* Ensure spans within headings inherit the title font and color */
+h1 span, h2 span, h3 span, h4 span, h5 span, h6 span {
+	font-family: inherit;
+	font-weight: inherit;
+	color: inherit;
 }
 

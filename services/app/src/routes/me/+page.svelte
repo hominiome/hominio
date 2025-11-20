@@ -3,7 +3,6 @@
 	import { getZeroContext } from '$lib/zero-utils';
 	import { allProjects } from '@hominio/zero';
 	import { GlassCard, LoadingSpinner, Alert, BackgroundBlobs } from '@hominio/brand';
-	import VoiceCall from '$lib/components/VoiceCall.svelte';
 
 	/** @type {Array<{id: string, title: string, description: string | null, createdAt: string, userId: string}>} */
 	let projects = $state([]);
@@ -109,10 +108,5 @@
 			{/each}
 		</div>
 	{/if}
-
-	<!-- Voice Call Component -->
-	<div class="relative z-10 mx-auto mt-12 max-w-2xl px-4">
-		<VoiceCall />
-	</div>
 </div>
 

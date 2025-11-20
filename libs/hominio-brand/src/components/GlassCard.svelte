@@ -13,6 +13,7 @@
 		lifted = false,
 		accent = false,
 		class: className = '',
+		children,
 		...restProps
 	} = $props();
 	
@@ -27,6 +28,6 @@
 		<!-- Gradient Accent Header -->
 		<div class="h-24 w-full bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 opacity-50"></div>
 	{/if}
-	<slot />
+	{@render children()}
 </div>
 

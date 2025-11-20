@@ -4,4 +4,5 @@
  */
 
 export * from './classes.js';
+export { createVoiceCallService } from './voiceCall.svelte.js';
 

@@ -42,3 +42,7 @@ vite.config.ts.timestamp-*
 *.db-wal2
 **/zero-replica.db*
 **/*.db-journal
+
+# Brand assets (synced from libs/hominio-brand/src/assets/)
+**/static/brand/
+**/public/brand/

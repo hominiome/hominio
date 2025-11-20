@@ -1,18 +1,16 @@
 <script>
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import { createAuthClient } from '@hominio/auth';
-	import { GlassPill, GlassIconButton, LoadingSpinner } from '@hominio/brand';
+    import { goto } from '$app/navigation';
+    import { createAuthClient } from '@hominio/auth';
+    import { NavPill, createVoiceCallService } from '@hominio/brand';
 
 	const authClient = createAuthClient();
 	const session = authClient.useSession();
 
+	// Initialize voice call service
+	const voiceCall = createVoiceCallService();
+
 	function goHome() {
 		goto('/me');
-	}
-
-	function goBack() {
-		window.history.length > 1 ? window.history.back() : goto('/me');
 	}
 
 	let signingOut = $state(false);
@@ -78,35 +76,65 @@
 		}
 	}
 
-	const isHome = $derived($page.url.pathname === '/me');
-	const isViewer = $derived(false); // No viewer pages anymore
-	const isAuthenticated = $derived($session.data?.user);
+	function handleGoogleSignIn() {
+		// Redirect to wallet service for Google sign-in
+		const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.0.0.1');
+		
+		// Get wallet domain
+		let walletDomain = import.meta.env.PUBLIC_DOMAIN_WALLET;
+		if (!walletDomain) {
+			if (isProduction) {
+				const hostname = window.location.hostname;
+				if (hostname.startsWith('app.')) {
+					walletDomain = hostname.replace('app.', 'wallet.');
+				} else if (hostname.startsWith('website.')) {
+					walletDomain = hostname.replace('website.', 'wallet.');
+				} else {
+					walletDomain = `wallet.${hostname.replace(/^www\./, '')}`;
+				}
+			} else {
+				walletDomain = 'localhost:4201';
+			}
+		}
+		walletDomain = walletDomain.replace(/^https?:\/\//, '');
+		const protocol = walletDomain.startsWith('localhost') || walletDomain.startsWith('127.0.0.1') ? 'http' : 'https';
+		const walletUrl = `${protocol}://${walletDomain}`;
+		
+		// Get callback URL (current page or default)
+		const currentUrl = window.location.href;
+		window.location.href = `${walletUrl}?callback=${encodeURIComponent(currentUrl)}`;
+	}
+
+	// Voice call handlers - Using actual voice call service
+	async function handleStartCall() {
+		await voiceCall.startCall();
+	}
+
+	async function handleStopCall() {
+		voiceCall.endCall();
+	}
+
+	// Ensure authentication state is properly reactive
+	const isAuthenticated = $derived(!!$session.data?.user);
+	const user = $derived($session.data?.user);
+	
+	// Debug: Log authentication state changes
+	$effect(() => {
+		console.log('[NavPill] Auth state changed:', { isAuthenticated, user: user?.name });
+	});
 </script>
 
-<GlassPill class="glass-pill">
-	<GlassIconButton onclick={goHome} aria-label="Home">
-		<img src="/logo_clean.png" alt="Home" class="h-7 w-7 object-contain" />
-	</GlassIconButton>
-	{#if isAuthenticated}
-		<GlassIconButton variant="danger" onclick={handleSignOut} disabled={signingOut} aria-label="Sign Out">
-			{#if signingOut}
-				<LoadingSpinner size="h-4 w-4" />
-			{:else}
-				<svg
-					width="18"
-					height="18"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-					<polyline points="16 17 21 12 16 7" />
-					<line x1="21" y1="12" x2="9" y2="12" />
-				</svg>
-			{/if}
-		</GlassIconButton>
-	{/if}
-</GlassPill>
+<NavPill 
+	onHome={goHome}
+	onSignOut={handleSignOut}
+	onGoogleSignIn={handleGoogleSignIn}
+	isAuthenticated={isAuthenticated}
+	signingOut={signingOut}
+	user={user}
+	isCallActive={voiceCall.isCallActive}
+	isConnecting={voiceCall.isConnecting}
+	isWaitingForPermission={voiceCall.isWaitingForPermission}
+	aiState={voiceCall.aiState}
+	onStartCall={handleStartCall}
+	onStopCall={handleStopCall}
+/>
