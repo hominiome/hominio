@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "hominio-app",
@@ -16,7 +17,7 @@
     },
     "libs/hominio-auth": {
       "name": "@hominio/auth",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "dependencies": {
         "@polar-sh/better-auth": "^1.3.0",
         "better-auth": "^1.3.34",
@@ -27,7 +28,7 @@
     },
     "libs/hominio-caps": {
       "name": "@hominio/caps",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "dependencies": {
         "@neondatabase/serverless": "^1.0.2",
         "kysely": "^0.28.8",
@@ -36,7 +37,7 @@
     },
     "libs/hominio-zero": {
       "name": "@hominio/zero",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "dependencies": {
         "@rocicorp/zero": "^0.24.0",
         "zod": "^3.23.8",
@@ -44,7 +45,7 @@
     },
     "services/api": {
       "name": "api",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "dependencies": {
         "@elysiajs/cors": "^1.1.1",
         "@google/genai": "^1.30.0",
@@ -66,7 +67,7 @@
     },
     "services/app": {
       "name": "app",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "dependencies": {
         "@hominio/auth": "workspace:*",
         "@hominio/caps": "workspace:*",
@@ -114,7 +115,7 @@
     },
     "services/sync": {
       "name": "sync",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "dependencies": {
         "@hominio/caps": "workspace:*",
         "@hominio/zero": "workspace:*",
@@ -129,7 +130,7 @@
     },
     "services/wallet": {
       "name": "wallet",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "dependencies": {
         "@better-auth/cli": "^1.3.34",
         "@hominio/auth": "workspace:*",
@@ -157,7 +158,7 @@
     },
     "services/website": {
       "name": "website",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "devDependencies": {
         "vite": "^7.1.10",
       },
