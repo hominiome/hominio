@@ -12,7 +12,8 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
-		"migrate:auth": "bunx @better-auth/cli migrate --config auth.migrate.ts --yes"
+		"migrate:auth": "bunx @better-auth/cli migrate --config auth.migrate.ts --yes",
+		"migrate:capabilities": "bun run auth.migrate.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-node": "^5.4.0",

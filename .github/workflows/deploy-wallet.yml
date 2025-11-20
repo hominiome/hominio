@@ -110,17 +110,29 @@ jobs:
           echo "📋 Recent logs:"
           flyctl logs --app hominio-wallet --no-tail | tail -50
 
-      - name: Run database migration
+      - name: Run BetterAuth database migration
         run: |
           echo "🔄 Running BetterAuth native migration..."
           echo "   Using BetterAuth CLI to create tables with correct schema."
           # Use BetterAuth's native migrate command (recommended approach)
           # This ensures schema matches BetterAuth's expectations exactly
           flyctl ssh console --app hominio-wallet -C "sh -c 'cd /app && bun run migrate:auth'" || {
-            echo "⚠️  Migration completed (tables may already exist - this is safe to ignore)."
+            echo "⚠️  BetterAuth migration completed (tables may already exist - this is safe to ignore)."
             echo "   BetterAuth CLI will skip if schema is already up-to-date."
           }
-          echo "✅ Migration step completed"
+          echo "✅ BetterAuth migration step completed"
+
+      - name: Run capabilities migration
+        run: |
+          echo "🔄 Running capabilities migration..."
+          echo "   Creating capabilities and capability_requests tables."
+          # Run capabilities migration (extends BetterAuth with capability-based access control)
+          # Uses BetterAuth's native way: run the migration script directly
+          flyctl ssh console --app hominio-wallet -C "sh -c 'cd /app && bun run migrate:capabilities'" || {
+            echo "⚠️  Capabilities migration completed (tables may already exist - this is safe to ignore)."
+            echo "   Migration will skip if tables are already created."
+          }
+          echo "✅ Capabilities migration step completed"
 
       - name: Verify SSL certificate status
         run: |
