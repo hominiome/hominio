@@ -1,3 +1,11 @@
+## [0.10.3](https://github.com/hominiome/hominio/compare/v0.10.2...v0.10.3) (2025-11-20)
+
+
+### Bug Fixes
+
+* pin Bun version in Dockerfiles and cleanup Zero ports ([a5a1511](https://github.com/hominiome/hominio/commit/a5a15114d2a261233c8d57fa3d6f0e85c93bdce3))
+* update lockfile after version sync ([489dd06](https://github.com/hominiome/hominio/commit/489dd06ed480aff2bd7c16cdd472b84a30464df7))
+
 ## [0.10.2](https://github.com/hominiome/hominio/compare/v0.10.1...v0.10.2) (2025-11-20)
 
 
