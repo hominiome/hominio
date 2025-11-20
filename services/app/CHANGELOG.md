@@ -1,3 +1,19 @@
+# [0.9.0](https://github.com/hominiome/hominio/compare/v0.8.0...v0.9.0) (2025-11-20)
+
+
+### Bug Fixes
+
+* add debug logging to capabilities routes ([f46f5c6](https://github.com/hominiome/hominio/commit/f46f5c651807b3b10e5228d8c0b2a6429850df75))
+* center profile image, name, and email on x-axis ([89d2b56](https://github.com/hominiome/hominio/commit/89d2b56e5335817fa3cd9c1972bd88883b6b436c))
+* comment out capabilities logic, focus on profile display only ([6cd0650](https://github.com/hominiome/hominio/commit/6cd0650755ddddb5903a5199c5ae77828b55c914))
+* improve profile page loading state and error handling ([8795957](https://github.com/hominiome/hominio/commit/8795957b766190da0059908f24d8d7e818910e85))
+* update Dockerfiles and workflows for new workspace dependencies ([970fb44](https://github.com/hominiome/hominio/commit/970fb44fe6c251bef6cc365b478905fcdd62c0bd))
+
+
+### Features
+
+* create unified profile page with capabilities management ([0db22d7](https://github.com/hominiome/hominio/commit/0db22d719f12cf817e7ceb67bea88e8ac3cf0190))
+
 # [0.8.0](https://github.com/hominiome/hominio/compare/v0.7.2...v0.8.0) (2025-11-20)
 
 
