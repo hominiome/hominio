@@ -10,7 +10,7 @@ import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// Sync service directory (where zero-schema.ts is located)
+// Sync service directory (schema is now in libs/hominio-zero/src/schema.ts)
 const syncDir = join(__dirname, '..');
 // Root directory (for env file access)
 const rootDir = join(__dirname, '../../..');

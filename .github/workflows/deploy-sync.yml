@@ -160,7 +160,7 @@ jobs:
         run: |
           echo "🔄 Deploying Zero schema permissions..."
           cd services/sync
-          bunx zero-deploy-permissions -p ./zero-schema.ts
+          bunx zero-deploy-permissions -p ../../libs/hominio-zero/src/schema.ts
         env:
           ZERO_UPSTREAM_DB: ${{ secrets.ZERO_POSTGRES_SECRET }}
 

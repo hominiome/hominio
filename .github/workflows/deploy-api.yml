@@ -100,8 +100,8 @@ jobs:
 
       - name: Deploy API service
         run: |
-          cd services/api
-          flyctl deploy --remote-only --app hominio-api
+          # Build from monorepo root to properly resolve workspace dependencies
+          flyctl deploy --remote-only --app hominio-api --config services/api/fly.toml --dockerfile services/api/Dockerfile
 
       - name: Check deployment status
         run: |

@@ -5,8 +5,8 @@ FROM rocicorp/zero:0.24.3000000000
 
 WORKDIR /app
 
-# Copy zero-schema.ts (required for zero-deploy-permissions)
-COPY zero-schema.ts ./
+# Note: zero-schema.ts is no longer copied here as it's now in libs/hominio-zero/src/schema.ts
+# The schema is deployed via GitHub Actions workflow using zero-deploy-permissions
 
 # Override ENTRYPOINT to allow CMD override
 # The Zero image likely has an ENTRYPOINT that we need to clear
