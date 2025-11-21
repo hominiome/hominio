@@ -43,16 +43,16 @@
 	}
 </script>
 
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
 	<div class="flex items-center justify-between">
-		<h2 class="text-2xl font-bold text-slate-900">Speisekarte</h2>
+		<h2 class="text-xl sm:text-2xl font-bold text-slate-900">Speisekarte</h2>
 		{#if onClose}
 			<button
 				onclick={onClose}
 				class="text-slate-400 hover:text-slate-600 transition-colors"
 				aria-label="Close"
 			>
-				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 				</svg>
 			</button>
@@ -63,24 +63,24 @@
 		<!-- Show all categories -->
 		{#each categories as cat}
 			{#if menu[cat.id] && menu[cat.id].length > 0}
-				<div class="mb-8">
-					<h3 class="mb-4 text-xl font-bold text-slate-800 flex items-center gap-2">
-						<svg width="24" height="24" class="text-[#2da6b4]" fill="currentColor" viewBox="0 0 24 24">
+				<div class="mb-6 sm:mb-8">
+					<h3 class="mb-3 sm:mb-4 text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+						<svg width="20" height="20" class="sm:w-6 sm:h-6 text-[#2da6b4]" fill="currentColor" viewBox="0 0 24 24">
 							{@html cat.icon}
 						</svg>
 						{cat.name}
 					</h3>
-					<div class="grid grid-cols-1 gap-4">
+					<div class="grid grid-cols-1 gap-3 sm:gap-4">
 						{#each menu[cat.id] as item}
 							<GlassCard lifted={true} class="p-0 overflow-hidden flex items-stretch">
-								<div class="flex-1 p-4 min-w-0 flex-shrink">
-									<h4 class="font-semibold text-slate-900 mb-2">{item.name}</h4>
-									<p class="text-sm text-slate-600">{item.description}</p>
+								<div class="flex-1 p-3 sm:p-4 min-w-0 flex-shrink">
+									<h4 class="text-sm sm:text-base font-semibold text-slate-900 mb-1 sm:mb-2">{item.name}</h4>
+									<p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{item.description}</p>
 								</div>
-								<div class="bg-[#2da6b4] text-white px-6 py-4 flex flex-col items-center justify-center flex-shrink-0" style="width: 140px; min-width: 140px;">
-									<div class="text-2xl font-bold whitespace-nowrap text-center">{formatPrice(item.price)}</div>
+								<div class="bg-[#2da6b4] text-white px-3 py-3 sm:px-6 sm:py-4 flex flex-col items-center justify-center flex-shrink-0 w-[90px] sm:w-[140px] min-w-[90px] sm:min-w-[140px]">
+									<div class="text-lg sm:text-2xl font-bold whitespace-nowrap text-center">{formatPrice(item.price)}</div>
 									{#if item.type}
-										<div class="text-xs uppercase tracking-wide mt-1 opacity-90 text-center">{item.type}</div>
+										<div class="text-[10px] sm:text-xs uppercase tracking-wide mt-0.5 sm:mt-1 opacity-90 text-center">{item.type}</div>
 									{/if}
 								</div>
 							</GlassCard>
@@ -93,25 +93,25 @@
 		<!-- Show single category -->
 		{#if menu[category] && menu[category].length > 0}
 			<div>
-				<h3 class="mb-4 text-xl font-bold text-slate-800 flex items-center gap-2">
+				<h3 class="mb-3 sm:mb-4 text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
 					{#if categories.find(c => c.id === category)}
-						<svg width="24" height="24" class="text-[#2da6b4]" fill="currentColor" viewBox="0 0 24 24">
+						<svg width="20" height="20" class="sm:w-6 sm:h-6 text-[#2da6b4]" fill="currentColor" viewBox="0 0 24 24">
 							{@html categories.find(c => c.id === category).icon}
 						</svg>
 					{/if}
 					{categories.find(c => c.id === category)?.name || category}
 				</h3>
-				<div class="grid grid-cols-1 gap-4">
+				<div class="grid grid-cols-1 gap-3 sm:gap-4">
 					{#each menu[category] as item}
 						<GlassCard lifted={true} class="p-0 overflow-hidden flex items-stretch">
-							<div class="flex-1 p-4 min-w-0 flex-shrink">
-								<h4 class="font-semibold text-slate-900 mb-2">{item.name}</h4>
-								<p class="text-sm text-slate-600">{item.description}</p>
+							<div class="flex-1 p-3 sm:p-4 min-w-0 flex-shrink">
+								<h4 class="text-sm sm:text-base font-semibold text-slate-900 mb-1 sm:mb-2">{item.name}</h4>
+								<p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{item.description}</p>
 							</div>
-							<div class="bg-[#2da6b4] text-white px-6 py-4 flex flex-col items-center justify-center flex-shrink-0" style="width: 140px; min-width: 140px;">
-								<div class="text-2xl font-bold whitespace-nowrap text-center">{formatPrice(item.price)}</div>
+							<div class="bg-[#2da6b4] text-white px-3 py-3 sm:px-6 sm:py-4 flex flex-col items-center justify-center flex-shrink-0 w-[90px] sm:w-[140px] min-w-[90px] sm:min-w-[140px]">
+								<div class="text-lg sm:text-2xl font-bold whitespace-nowrap text-center">{formatPrice(item.price)}</div>
 								{#if item.type}
-									<div class="text-xs uppercase tracking-wide mt-1 opacity-90 text-center">{item.type}</div>
+									<div class="text-[10px] sm:text-xs uppercase tracking-wide mt-0.5 sm:mt-1 opacity-90 text-center">{item.type}</div>
 								{/if}
 							</div>
 						</GlassCard>
@@ -119,7 +119,7 @@
 				</div>
 			</div>
 		{:else}
-			<div class="text-center py-8 text-slate-500">
+			<div class="text-center py-6 sm:py-8 text-sm sm:text-base text-slate-500">
 				Keine Artikel in dieser Kategorie gefunden.
 			</div>
 		{/if}
