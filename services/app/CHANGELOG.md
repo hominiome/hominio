@@ -1,3 +1,11 @@
+## [0.12.14](https://github.com/hominiome/hominio/compare/v0.12.13...v0.12.14) (2025-11-21)
+
+
+### Bug Fixes
+
+* make menu more compact on mobile with smaller text and narrower pricing ([f8de4ba](https://github.com/hominiome/hominio/commit/f8de4ba311ce70ebe71aa58a2a7b08a4d9779630))
+* prevent forever-spinning loading state for hotels without capability ([68f4261](https://github.com/hominiome/hominio/commit/68f42611c1e902df230a6c2486e177cf557f9f82))
+
 ## [0.12.13](https://github.com/hominiome/hominio/compare/v0.12.12...v0.12.13) (2025-11-21)
 
 
