@@ -26,7 +26,7 @@
 
 	// Get Zero server URL
 	// In dev: http://localhost:4848
-	// In production: use PUBLIC_ZERO_SYNC_DOMAIN or default to sync.{domain}
+	// In production: use PUBLIC_DOMAIN_SYNC or default to sync.{root-domain}
 	const zeroServerUrl = browser
 		? (() => {
 				// Check if we're in dev (localhost)
@@ -36,8 +36,14 @@
 				) {
 					return 'http://localhost:4848';
 				}
-				// Production: use env var or construct from domain
-				const syncDomain = publicEnv.PUBLIC_ZERO_SYNC_DOMAIN || `sync.${window.location.hostname.replace(/^www\./, '')}`;
+				// Production: use env var or construct from root domain
+				let syncDomain = publicEnv.PUBLIC_DOMAIN_SYNC;
+				if (!syncDomain) {
+					// Extract root domain by removing subdomain prefixes (app., www., etc.)
+					const hostname = window.location.hostname;
+					const rootDomain = hostname.replace(/^(www|app|wallet|api|sync|website)\./, '');
+					syncDomain = `sync.${rootDomain}`;
+				}
 				return `https://${syncDomain}`;
 			})()
 		: 'http://localhost:4848';

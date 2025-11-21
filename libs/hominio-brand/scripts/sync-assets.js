@@ -40,10 +40,10 @@ const serviceStaticDirs = isDockerContext
 		resolve(cwd, 'static/brand'),
 	]
 	: [
-		// Normal monorepo context: sync to all services
-		...(isAppService || !isDockerContext ? [resolve(monorepoRoot, 'services/app/static/brand')] : []),
-		...(isWalletService || !isDockerContext ? [resolve(monorepoRoot, 'services/wallet/static/brand')] : []),
-		...(isWebsiteService || !isDockerContext ? [resolve(monorepoRoot, 'services/website/static/brand')] : []),
+		// Normal monorepo context: sync to detected service(s) only
+		...(isAppService ? [resolve(monorepoRoot, 'services/app/static/brand')] : []),
+		...(isWalletService ? [resolve(monorepoRoot, 'services/wallet/static/brand')] : []),
+		...(isWebsiteService ? [resolve(monorepoRoot, 'services/website/static/brand')] : []),
 	].filter(Boolean);
 
 /**
