@@ -43,6 +43,22 @@
 	}
 </script>
 
+<style>
+	:global(.pricing-box) {
+		width: 100px !important;
+		min-width: 100px !important;
+		max-width: 100px !important;
+	}
+	
+	@media (min-width: 640px) {
+		:global(.pricing-box) {
+			width: 140px !important;
+			min-width: 140px !important;
+			max-width: 140px !important;
+		}
+	}
+</style>
+
 <div>
 	<div class="relative flex items-center justify-center mb-3">
 		<h2 class="text-xl sm:text-2xl font-bold text-slate-900 text-center">Speisekarte</h2>
@@ -78,10 +94,10 @@
 									<h4 class="text-sm sm:text-base font-semibold text-slate-900 mb-1 sm:mb-2">{item.name}</h4>
 									<p class="text-xs sm:text-sm text-slate-600">{item.description}</p>
 								</div>
-								<div class="bg-[#2da6b4] text-white px-3 sm:px-6 py-3 sm:py-4 flex flex-col items-center justify-center flex-shrink-0 w-[100px] min-w-[100px] max-w-[100px] sm:w-[140px] sm:min-w-[140px] sm:max-w-[140px]">
-									<div class="text-base sm:text-2xl font-bold whitespace-nowrap text-center leading-tight">{formatPrice(item.price)}</div>
+								<div class="pricing-box bg-[#2da6b4] text-white px-3 sm:px-6 py-3 sm:py-4 flex flex-col items-center justify-center flex-shrink-0 box-border">
+									<div class="text-base sm:text-2xl font-bold whitespace-nowrap text-center leading-tight w-full overflow-hidden">{formatPrice(item.price)}</div>
 									{#if item.type}
-										<div class="text-xs sm:text-sm uppercase tracking-wide mt-0.5 sm:mt-1 opacity-90 text-center leading-tight">{item.type}</div>
+										<div class="text-xs sm:text-sm uppercase tracking-wide mt-0.5 sm:mt-1 opacity-90 text-center leading-tight w-full overflow-hidden">{item.type}</div>
 									{/if}
 								</div>
 							</GlassCard>
@@ -106,10 +122,10 @@
 								<h4 class="text-sm sm:text-base font-semibold text-slate-900 mb-1 sm:mb-2">{item.name}</h4>
 								<p class="text-xs sm:text-sm text-slate-600">{item.description}</p>
 							</div>
-							<div class="bg-[#2da6b4] text-white px-3 sm:px-6 py-3 sm:py-4 flex flex-col items-center justify-center flex-shrink-0 w-[100px] min-w-[100px] max-w-[100px] sm:w-[140px] sm:min-w-[140px] sm:max-w-[140px]">
-								<div class="text-base sm:text-2xl font-bold whitespace-nowrap text-center leading-tight">{formatPrice(item.price)}</div>
+							<div class="pricing-box bg-[#2da6b4] text-white px-3 sm:px-6 py-3 sm:py-4 flex flex-col items-center justify-center flex-shrink-0 box-border">
+								<div class="text-base sm:text-2xl font-bold whitespace-nowrap text-center leading-tight w-full overflow-hidden">{formatPrice(item.price)}</div>
 								{#if item.type}
-									<div class="text-xs sm:text-sm uppercase tracking-wide mt-0.5 sm:mt-1 opacity-90 text-center leading-tight">{item.type}</div>
+									<div class="text-xs sm:text-sm uppercase tracking-wide mt-0.5 sm:mt-1 opacity-90 text-center leading-tight w-full overflow-hidden">{item.type}</div>
 								{/if}
 							</div>
 						</GlassCard>
