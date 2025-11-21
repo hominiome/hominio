@@ -310,14 +310,13 @@
 					</GlassCard>
 				</div>
 				
-				<!-- Back button - bottom left, aligned with nav pill center -->
+				<!-- Back button - bottom left, aligned with nav pill -->
 				<button
 					onclick={goBackToAgent}
-					class="fixed left-4 z-50 w-[42px] h-[42px] rounded-full bg-[#fef3e2] border border-[#f5e6d3] flex items-center justify-center shadow-sm hover:bg-[#fce8c7] transition-colors"
-					style="bottom: calc(21px + env(safe-area-inset-bottom) + 21px);"
+					class="back-button"
 					aria-label="Back"
 				>
-					<svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="back-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
 					</svg>
 				</button>
@@ -442,4 +441,40 @@
 		{/if}
 	</div>
 </div>
+
+<style>
+	.back-button {
+		position: fixed;
+		bottom: 0;
+		left: 1rem;
+		z-index: 1000;
+		margin-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+		width: 42px;
+		height: 42px;
+		border-radius: 9999px;
+		border: 1px solid var(--color-primary-800);
+		background-color: var(--color-primary-800);
+		backdrop-filter: blur(24px) saturate(180%);
+		-webkit-backdrop-filter: blur(24px) saturate(180%);
+		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s;
+		opacity: 0.95;
+		cursor: pointer;
+	}
+	
+	.back-button:hover {
+		background-color: var(--color-primary-700);
+		border-color: var(--color-primary-700);
+		opacity: 1;
+	}
+	
+	.back-button-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		color: white;
+	}
+</style>
 
