@@ -821,12 +821,8 @@
 			min-height: 36px;
 		}
 		
-		.call-btn {
-			width: 64px;
-			height: 64px;
-			margin-top: -10px;
-			margin-bottom: -10px;
-		}
+		/* Keep call button same size on tablet as desktop */
+		/* Only shrink on mobile (480px) */
 		
 		.signin-btn {
 			padding: 0.625rem 1.25rem;

@@ -490,5 +490,18 @@
 		height: 1.5rem;
 		color: var(--color-primary-50);
 	}
+	
+	/* Tablet and Desktop: Larger buttons to match nav pill */
+	@media (min-width: 769px) {
+		.nav-action-button {
+			width: 56px;
+			height: 56px;
+		}
+		
+		.nav-action-button-icon {
+			width: 1.75rem;
+			height: 1.75rem;
+		}
+	}
 </style>
 
