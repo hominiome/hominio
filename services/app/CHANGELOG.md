@@ -1,3 +1,10 @@
+## [0.12.1](https://github.com/hominiome/hominio/compare/v0.12.0...v0.12.1) (2025-11-21)
+
+
+### Bug Fixes
+
+* revert Safari WebSocket fix that broke production connections ([9b0c570](https://github.com/hominiome/hominio/commit/9b0c5702186f2fa7cc51809280d6042852ef489c))
+
 # [0.12.0](https://github.com/hominiome/hominio/compare/v0.11.5...v0.12.0) (2025-11-21)
 
 
