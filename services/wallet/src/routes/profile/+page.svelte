@@ -495,8 +495,8 @@
 		justify-content: flex-start;
 		gap: 0.625rem;
 		border-top: 1px solid rgba(148, 163, 184, 0.15);
-		margin-top: 0.75rem;
-		padding: 1rem 1.25rem;
+		margin-top: 0;
+		padding: 0.75rem 1.25rem 1rem 1.25rem;
 	}
 	
 	.group-capability-badge {
@@ -548,8 +548,8 @@
 	}
 	
 	.group-capabilities-list {
-		margin-top: 1rem;
-		padding-top: 1rem;
+		margin-top: 0;
+		padding: 1rem 1.25rem;
 		border-top: 1px solid rgba(148, 163, 184, 0.2);
 		display: flex;
 		flex-direction: column;
@@ -559,9 +559,10 @@
 	.capability-sub-item {
 		padding: 0.875rem 1rem;
 		background: rgba(255, 255, 255, 0.4);
-		border-radius: 0.5rem;
-		border: 1px solid rgba(148, 163, 184, 0.15);
-		backdrop-filter: blur(4px);
+		border-radius: 1.5rem;
+		border: 1px solid rgba(255, 255, 255, 0.6);
+		backdrop-filter: blur(24px);
+		box-shadow: 0 8px 30px rgb(0, 0, 0, 0.04);
 	}
 	
 	/* Mobile Responsive Styles */

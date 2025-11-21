@@ -1,5 +1,6 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
+import { requireAdmin } from "$lib/api-helpers";
 import { getAuthDb } from "$lib/db.server";
 import { sql } from "kysely";
 
@@ -9,7 +10,7 @@ import { sql } from "kysely";
  */
 export const POST: RequestHandler = async ({ request, params }) => {
   try {
-    // TODO: Add admin authentication check
+    await requireAdmin(request);
     const db = getAuthDb();
     const { groupId } = params;
     const { capabilityId } = await request.json();
@@ -76,7 +77,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
  */
 export const DELETE: RequestHandler = async ({ request, params }) => {
   try {
-    // TODO: Add admin authentication check
+    await requireAdmin(request);
     const db = getAuthDb();
     const { groupId } = params;
     const { capabilityId } = await request.json();

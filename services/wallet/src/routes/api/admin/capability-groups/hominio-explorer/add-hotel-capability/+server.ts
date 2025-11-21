@@ -1,5 +1,6 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
+import { requireAdmin } from "$lib/api-helpers";
 import { getAuthDb } from "$lib/db.server";
 import { Kysely, sql } from "kysely";
 import { NeonDialect } from "kysely-neon";
@@ -12,7 +13,7 @@ import { neon } from "@neondatabase/serverless";
  */
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    // TODO: Add admin authentication check
+    await requireAdmin(request);
     const db = getAuthDb();
     const ADMIN = process.env.ADMIN;
     if (!ADMIN) {
