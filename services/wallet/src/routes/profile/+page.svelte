@@ -237,12 +237,6 @@
 											{#if groupCap.title}
 												<h3 class="capability-title">{groupCap.title}</h3>
 											{/if}
-											<span class="group-capability-badge">
-												<span class="group-capability-badge-icon">👥</span>
-												<span class="group-capability-badge-text">
-													{groupCap.subCapabilities?.length || 0} {groupCap.subCapabilities?.length === 1 ? 'capability' : 'capabilities'}
-												</span>
-											</span>
 										</div>
 										{#if groupCap.description}
 											<p class="capability-description">
@@ -264,8 +258,13 @@
 									</div>
 								</div>
 								
-								<!-- Expand/Collapse Button at Bottom -->
-								<div class="group-capability-toggle">
+								<!-- Expand/Collapse Button and Badge Row at Bottom -->
+								<div class="group-capability-toggle-row">
+									<span class="group-capability-badge">
+										<span class="group-capability-badge-text">
+											{groupCap.subCapabilities?.length || 0} {groupCap.subCapabilities?.length === 1 ? 'capability' : 'capabilities'}
+										</span>
+									</span>
 									<button
 										onclick={() => {
 											const newSet = new Set(expandedGroups);
@@ -492,64 +491,63 @@
 		position: relative;
 	}
 	
+	.group-capability-toggle-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		border-top: 1px solid rgba(148, 163, 184, 0.2);
+		margin-top: 1rem;
+		padding-top: 1rem;
+	}
+	
 	.group-capability-badge {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.375rem;
-		padding: 0.375rem 0.75rem;
-		background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
-		border-radius: 9999px;
-		box-shadow: 0 2px 4px rgba(168, 85, 247, 0.2);
-	}
-	
-	.group-capability-badge-icon {
-		font-size: 0.875rem;
-		line-height: 1;
+		padding: 0.5rem 0.875rem;
+		background: var(--color-primary-100);
+		border: 1px solid var(--color-primary-300);
+		border-radius: 0.5rem;
 	}
 	
 	.group-capability-badge-text {
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
-		color: white;
-		letter-spacing: 0.025em;
-	}
-	
-	.group-capability-toggle {
-		border-top: 1px solid rgba(148, 163, 184, 0.2);
-		margin-top: 1rem;
-		padding-top: 0.75rem;
+		color: var(--color-primary-800);
+		letter-spacing: 0.01em;
 	}
 	
 	.group-toggle-button {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.5rem;
-		width: 100%;
-		padding: 0.625rem 1rem;
-		background: rgba(168, 85, 247, 0.1);
-		border: 1px solid rgba(168, 85, 247, 0.2);
+		gap: 0.75rem;
+		padding: 0.875rem 1.5rem;
+		background: var(--color-primary-800);
+		border: 1px solid var(--color-primary-700);
 		border-radius: 0.5rem;
-		color: #9333ea;
-		font-size: 0.875rem;
+		color: var(--color-primary-100);
+		font-size: 0.9375rem;
 		font-weight: 600;
 		cursor: pointer;
 		transition: all 0.2s ease;
+		flex: 1;
+		max-width: 300px;
 	}
 	
 	.group-toggle-button:hover {
-		background: rgba(168, 85, 247, 0.15);
-		border-color: rgba(168, 85, 247, 0.3);
+		background: var(--color-primary-700);
+		border-color: var(--color-primary-600);
 	}
 	
 	.group-toggle-text {
-		color: #9333ea;
+		color: var(--color-primary-100);
 	}
 	
 	.group-toggle-icon {
-		width: 1rem;
-		height: 1rem;
-		color: #9333ea;
+		width: 1.125rem;
+		height: 1.125rem;
+		color: var(--color-primary-100);
 		transition: transform 0.2s ease;
 	}
 	
