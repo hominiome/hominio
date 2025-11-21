@@ -1,3 +1,10 @@
+## [0.11.3](https://github.com/hominiome/hominio/compare/v0.11.2...v0.11.3) (2025-11-21)
+
+
+### Bug Fixes
+
+* correct sync domain construction and service detection logic ([64741cf](https://github.com/hominiome/hominio/commit/64741cf50b8547c820bb177b4d575683092a1522))
+
 ## [0.11.2](https://github.com/hominiome/hominio/compare/v0.11.1...v0.11.2) (2025-11-21)
 
 
