@@ -1,8 +1,8 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getAuthDb } from "$lib/db.server";
-import { sql } from "kysely";
-import { Kysely, NeonDialect } from "kysely";
+import { Kysely, sql } from "kysely";
+import { NeonDialect } from "kysely-neon";
 import { neon } from "@neondatabase/serverless";
 
 /**
@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ request }) => {
     try {
       const zeroDb = new Kysely<any>({
         dialect: new NeonDialect({
-          connection: neon(ZERO_POSTGRES_SECRET),
+          neon: neon(ZERO_POSTGRES_SECRET),
         }),
       });
 
