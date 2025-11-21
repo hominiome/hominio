@@ -1,12 +1,12 @@
 # fly.toml for Zero Sync Service (sync.hominio.me)
-# This is a separate Fly.io app for the zero-cache service
+# Single-node zero-cache deployment on Fly.io
+# Based on Zero deployment best practices: https://zero.rocicorp.dev/docs/deploy
 
 app = 'hominio-sync'
 primary_region = 'fra'
 
 [build]
-  # Build custom image from Dockerfile.sync
-  # This extends the official rocicorp/zero image and adds our schema file
+  # Use official Zero Docker image
   dockerfile = "Dockerfile"
 
 [env]
@@ -16,8 +16,7 @@ primary_region = 'fra'
 [http_service]
   internal_port = 4848
   force_https = true
-  auto_stop_machines = 'stop'
-  auto_start_machines = true
+  auto_stop_machines = 'off'  # Changed from 'stop' - keep machines running for better performance
   min_machines_running = 1  # Keep sync service always running
 
 [[http_service.checks]]
@@ -25,12 +24,12 @@ primary_region = 'fra'
   interval = "30s"
   method = "GET"
   timeout = "5s"
-  path = "/"
+  path = "/keepalive"  # Use /keepalive endpoint per Zero docs (better health check)
 
 [[vm]]
-  memory = '512mb'
+  memory = '2gb'  # Increased from 512mb - Zero recommends 2GB+ for better performance
   cpu_kind = 'shared'
-  cpus = 1
+  cpus = 2  # Increased from 1 - better performance for sync operations
 
 [[mounts]]
   source = "zero_replica"

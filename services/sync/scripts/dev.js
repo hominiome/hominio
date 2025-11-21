@@ -21,22 +21,29 @@ const ZERO_POSTGRES_SECRET = process.env.ZERO_POSTGRES_SECRET || process.env.SEC
 const AUTH_SECRET = process.env.AUTH_SECRET;
 const ZERO_AUTH_SECRET = process.env.ZERO_AUTH_SECRET || AUTH_SECRET;
 
-// Set up environment for zero-cache-dev
-const env = {
-  ...process.env,
-  // Map ZERO_POSTGRES_SECRET to ZERO_UPSTREAM_DB (zero-cache-dev expects this)
-  ZERO_UPSTREAM_DB: ZERO_POSTGRES_SECRET || process.env.ZERO_UPSTREAM_DB,
-  // Set local dev URLs (API service runs on port 4204)
-  ZERO_GET_QUERIES_URL: process.env.ZERO_GET_QUERIES_URL || 'http://localhost:4204/api/v0/zero/get-queries',
-  ZERO_PUSH_URL: process.env.ZERO_PUSH_URL || 'http://localhost:4204/api/v0/zero/push',
-  // Set cookie forwarding (required for Better Auth)
-  ZERO_GET_QUERIES_FORWARD_COOKIES: process.env.ZERO_GET_QUERIES_FORWARD_COOKIES || 'true',
-  ZERO_MUTATE_FORWARD_COOKIES: process.env.ZERO_MUTATE_FORWARD_COOKIES || 'true',
-  // Set auth secret (for admin password and JWT)
-  ZERO_AUTH_SECRET: ZERO_AUTH_SECRET,
-  // Set replica file location (local dev)
-  ZERO_REPLICA_FILE: process.env.ZERO_REPLICA_FILE || './zero-replica.db',
-};
+  // Set up environment for zero-cache-dev
+  // Remove deprecated environment variables to avoid warnings
+  const {
+    ZERO_CHANGE_STREAMER_PROTOCOL,
+    ZERO_TARGET_CLIENT_ROW_COUNT,
+    ...restEnv
+  } = process.env;
+
+  const env = {
+    ...restEnv, // Include all env vars except deprecated ones
+    // Map ZERO_POSTGRES_SECRET to ZERO_UPSTREAM_DB (zero-cache-dev expects this)
+    ZERO_UPSTREAM_DB: ZERO_POSTGRES_SECRET || process.env.ZERO_UPSTREAM_DB,
+    // Set local dev URLs (API service runs on port 4204)
+    ZERO_GET_QUERIES_URL: process.env.ZERO_GET_QUERIES_URL || 'http://localhost:4204/api/v0/zero/get-queries',
+    ZERO_PUSH_URL: process.env.ZERO_PUSH_URL || 'http://localhost:4204/api/v0/zero/push',
+    // Set cookie forwarding (required for Better Auth)
+    ZERO_GET_QUERIES_FORWARD_COOKIES: process.env.ZERO_GET_QUERIES_FORWARD_COOKIES || 'true',
+    ZERO_MUTATE_FORWARD_COOKIES: process.env.ZERO_MUTATE_FORWARD_COOKIES || 'true',
+    // Set auth secret (for admin password and JWT)
+    ZERO_AUTH_SECRET: ZERO_AUTH_SECRET,
+    // Set replica file location (local dev)
+    ZERO_REPLICA_FILE: process.env.ZERO_REPLICA_FILE || './zero-replica.db',
+  };
 
 // Check required env vars
 if (!env.ZERO_UPSTREAM_DB) {

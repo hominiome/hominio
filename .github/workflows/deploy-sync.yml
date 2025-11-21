@@ -98,6 +98,10 @@ jobs:
             NODE_ENV="production" \
             --app hominio-sync
 
+          # Explicitly unset deprecated flags if they exist (cleanup)
+          echo "🧹 Cleaning up deprecated environment variables..."
+          flyctl secrets unset ZERO_CHANGE_STREAMER_PROTOCOL ZERO_TARGET_CLIENT_ROW_COUNT --app hominio-sync 2>/dev/null || echo "   (No deprecated flags found - this is expected)"
+
           echo "✅ Sync service secrets set. Verifying..."
           flyctl secrets list --app hominio-sync
 
