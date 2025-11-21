@@ -80,6 +80,8 @@ export async function migrateCapabilities(dbInstance: Kysely<any>) {
       .addColumn("actions", sql`text[]`, (col) => col.notNull())
       .addColumn("conditions", sql`jsonb`)
       .addColumn("metadata", sql`jsonb`, (col) => col.notNull())
+      .addColumn("title", "varchar(255)") // Human-readable title
+      .addColumn("description", "text") // Human-readable description
       .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`))
       .addColumn("updated_at", "timestamp", (col) => col.defaultTo(sql`NOW()`))
       .execute();
@@ -160,6 +162,31 @@ export async function migrateCapabilities(dbInstance: Kysely<any>) {
       }
     }
 
+    // Add title and description columns if they don't exist (for existing tables)
+    try {
+      await dbInstance.schema
+        .alterTable("capabilities")
+        .addColumn("title", "varchar(255)")
+        .execute();
+      console.log("✅ Added title column to capabilities table");
+    } catch (error: any) {
+      if (!error.message?.includes("already exists") && !error.message?.includes("duplicate")) {
+        console.log("ℹ️  Title column may already exist, skipping");
+      }
+    }
+
+    try {
+      await dbInstance.schema
+        .alterTable("capabilities")
+        .addColumn("description", "text")
+        .execute();
+      console.log("✅ Added description column to capabilities table");
+    } catch (error: any) {
+      if (!error.message?.includes("already exists") && !error.message?.includes("duplicate")) {
+        console.log("ℹ️  Description column may already exist, skipping");
+      }
+    }
+
     console.log("\n✅ Capabilities migration completed successfully!\n");
   } catch (error) {
     console.error("❌ Capabilities migration failed:", error);
@@ -194,7 +221,22 @@ export async function seedAdminCapabilities(dbInstance: Kysely<any>) {
       .executeTakeFirst();
 
     if (existingCapability) {
-      console.log(`ℹ️  Admin ${ADMIN} already has voice API capability, skipping\n`);
+      // Update existing capability with title and description if missing
+      if (!existingCapability.title || !existingCapability.description) {
+        console.log(`📝 Updating existing admin voice capability with title and description...\n`);
+        await dbInstance
+          .updateTable("capabilities")
+          .set({
+            title: "Voice Assistant Access",
+            description: "Unlimited voice minutes",
+            updated_at: new Date(),
+          })
+          .where("id", "=", existingCapability.id)
+          .execute();
+        console.log("✅ Updated existing admin voice capability with title and description!\n");
+        return;
+      }
+      console.log(`ℹ️  Admin ${ADMIN} already has voice API capability with title/description, skipping\n`);
       return;
     }
 
@@ -216,6 +258,8 @@ export async function seedAdminCapabilities(dbInstance: Kysely<any>) {
           reason: "admin_seeding",
           created_at: new Date().toISOString(),
         },
+        title: "Voice Assistant Access",
+        description: "Unlimited voice minutes",
         created_at: new Date(),
         updated_at: new Date(),
       })

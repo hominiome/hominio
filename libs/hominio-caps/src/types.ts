@@ -61,6 +61,8 @@ export interface Capability {
   actions: Action[];
   conditions?: CapabilityConditions;
   metadata: CapabilityMetadata;
+  title?: string; // Human-readable title for the capability
+  description?: string; // Human-readable description explaining what the capability does
   created_at: string;
   updated_at: string;
 }

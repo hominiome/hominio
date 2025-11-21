@@ -152,7 +152,7 @@
 
 						<!-- Logout Button -->
 						<div class="mt-8 flex justify-center">
-							<GlassButton variant="danger" onclick={handleSignOut} disabled={signingOut} class="items-center gap-2">
+							<GlassButton variant="alert" onclick={handleSignOut} disabled={signingOut} class="items-center gap-2">
 								{#if signingOut}
 									<div class="h-4 w-4 animate-spin rounded-full border-2 border-red-300 border-t-red-600"></div>
 									<span>Signing out...</span>
@@ -189,38 +189,53 @@
 						<p class="text-slate-600">No capabilities granted yet.</p>
 					</GlassCard>
 				{:else}
-					<div class="grid gap-4 md:grid-cols-2">
+					<div class="grid gap-3 grid-cols-1">
 						{#each capabilities as capability (capability.id)}
-							<GlassCard class="p-6">
-								<div class="space-y-3">
-									<div>
-										<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Resource</span>
-										<p class="mt-1 font-mono text-sm text-slate-900 break-all">{formatResource(capability)}</p>
-									</div>
-									<div>
-										<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Actions</span>
-										<div class="mt-1 flex flex-wrap gap-2">
-											{#each capability.actions as action}
-												<span class="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
-													{action}
-												</span>
-											{/each}
-										</div>
-									</div>
-									{#if capability.conditions?.expiresAt}
-										<div>
-											<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Expires</span>
-											<p class="mt-1 text-sm text-slate-600">
-												{new Date(capability.conditions.expiresAt).toLocaleDateString('de-DE', { 
-													year: 'numeric', 
-													month: 'long', 
-													day: 'numeric' 
-												})}
+							<GlassCard class="p-4">
+								<div class="flex items-start justify-between gap-4">
+									<!-- Left: Title and Description -->
+									<div class="flex-1 min-w-0 flex flex-col justify-start">
+										{#if capability.title}
+											<h3 class="text-lg font-semibold leading-tight" style="color: var(--color-primary-700);">{capability.title}</h3>
+										{/if}
+										{#if capability.description}
+											<p class="mt-0.5 text-sm text-slate-600 leading-tight">
+												{capability.description} - GRANTED {new Date(capability.created_at).toLocaleDateString('de-DE', { month: 'short', day: 'numeric' })}
 											</p>
+										{:else}
+											<p class="mt-0.5 text-sm text-slate-500 italic">
+												No description - GRANTED {new Date(capability.created_at).toLocaleDateString('de-DE', { month: 'short', day: 'numeric' })}
+											</p>
+										{/if}
+									</div>
+									
+									<!-- Right: All Metadata (value first, then label) -->
+									<div class="shrink-0 text-right flex flex-col justify-start" style="gap: 0.25rem;">
+										<div class="flex items-center justify-end gap-2">
+											<p class="font-mono text-xs text-slate-900">{formatResource(capability)}</p>
+											<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Resource</span>
 										</div>
-									{/if}
-									<div class="pt-2 text-xs text-slate-400">
-										Granted {new Date(capability.created_at).toLocaleDateString('de-DE')}
+										<div class="flex items-center justify-end gap-2">
+											<div class="flex gap-1">
+												{#each capability.actions as action}
+													<span class="inline-block rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800">
+														{action}
+													</span>
+												{/each}
+											</div>
+											<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Actions</span>
+										</div>
+										{#if capability.conditions?.expiresAt}
+											<div class="flex items-center justify-end gap-2">
+												<p class="text-xs text-slate-600">
+													{new Date(capability.conditions.expiresAt).toLocaleDateString('de-DE', { 
+														month: 'short', 
+														day: 'numeric' 
+													})}
+												</p>
+												<span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Expires</span>
+											</div>
+										{/if}
 									</div>
 								</div>
 							</GlassCard>

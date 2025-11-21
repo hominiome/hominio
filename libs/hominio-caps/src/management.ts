@@ -21,13 +21,17 @@ import type { Principal, Resource, Action } from './types';
  * @param resource - Resource to grant access to
  * @param actions - Actions to grant
  * @param conditions - Optional conditions
+ * @param title - Optional human-readable title
+ * @param description - Optional human-readable description
  */
 export async function grantCapability(
   issuer: Principal,
   principal: Principal,
   resource: Resource,
   actions: Action[],
-  conditions?: any
+  conditions?: any,
+  title?: string,
+  description?: string
 ): Promise<string> {
   // Verify issuer has manage capability (or is owner)
   // For now, we'll trust the caller to verify this
@@ -38,7 +42,10 @@ export async function grantCapability(
     resource,
     actions,
     issuer,
-    conditions
+    conditions,
+    undefined,
+    title,
+    description
   );
 
   return capability.id;

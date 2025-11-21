@@ -19,6 +19,8 @@ interface CapabilitiesTable {
   actions: string[];
   conditions: any | null;
   metadata: any;
+  title: string | null;
+  description: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -81,6 +83,8 @@ function rowToCapability(row: CapabilitiesTable): Capability {
     actions: row.actions as Action[],
     conditions: row.conditions || undefined,
     metadata: row.metadata,
+    title: row.title || undefined,
+    description: row.description || undefined,
     created_at: row.created_at.toISOString(),
     updated_at: row.updated_at.toISOString(),
   };
@@ -146,7 +150,9 @@ export async function createCapability(
   actions: Action[],
   issuer: string,
   conditions?: any,
-  requestId?: string
+  requestId?: string,
+  title?: string,
+  description?: string
 ): Promise<Capability> {
   const db = getDb();
   const now = new Date();
@@ -166,6 +172,8 @@ export async function createCapability(
         issuer,
         requestId,
       },
+      title: title || null,
+      description: description || null,
       created_at: now,
       updated_at: now,
     })

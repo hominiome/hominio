@@ -66,6 +66,58 @@
 	--color-accent-900: #745018;
 	--color-accent-950: #54380f;
 	
+	/* Success - Green (Base: #4ca984) */
+	--color-success-50: #ecfdf5;
+	--color-success-100: #d1fae5;
+	--color-success-200: #a7f3d0;
+	--color-success-300: #6ee7b7;
+	--color-success-400: #34d399;
+	--color-success-500: #4ca984;
+	--color-success-600: #059669;
+	--color-success-700: #047857;
+	--color-success-800: #065f46;
+	--color-success-900: #064e3b;
+	--color-success-950: #022c22;
+	
+	/* Info - Pastel Brown/Earth Tones (Base: #8b7355) */
+	--color-info-50: #faf8f5;
+	--color-info-100: #f5f1ea;
+	--color-info-200: #ebe3d5;
+	--color-info-300: #d4cab5;
+	--color-info-400: #b8ab91;
+	--color-info-500: #8b7355;
+	--color-info-600: #6d5a44;
+	--color-info-700: #524433;
+	--color-info-800: #3d3226;
+	--color-info-900: #2a251c;
+	--color-info-950: #1a1610;
+	
+	/* Warning - Pastel Orange */
+	--color-warning-50: #fff8f0;
+	--color-warning-100: #fff0e0;
+	--color-warning-200: #ffe1c2;
+	--color-warning-300: #ffcc99;
+	--color-warning-400: #ffb366;
+	--color-warning-500: #ff9933;
+	--color-warning-600: #cc7a29;
+	--color-warning-700: #995c1f;
+	--color-warning-800: #663d14;
+	--color-warning-900: #4d2e0f;
+	--color-warning-950: #331f0a;
+	
+	/* Alert - Purple/Magenta (Base: #a3376a) */
+	--color-alert-50: #faf5f8;
+	--color-alert-100: #f5ebf1;
+	--color-alert-200: #ebd7e3;
+	--color-alert-300: #dbb8cd;
+	--color-alert-400: #c28ab1;
+	--color-alert-500: #a3376a;
+	--color-alert-600: #8d2d59;
+	--color-alert-700: #77264a;
+	--color-alert-800: #611f3b;
+	--color-alert-900: #4b182c;
+	--color-alert-950: #2d0c1a;
+	
 	/* Legacy semantic mappings for backward compatibility */
 	--color-primary: var(--color-primary-500);
 	--color-secondary: var(--color-secondary-500);
@@ -165,6 +217,22 @@
 	border-color: rgba(220, 38, 38, 1);
 	background-color: rgba(254, 226, 226, 0.95);
 	box-shadow: 0 4px 8px -1px rgb(0 0 0 / 0.12);
+	transform: translateY(-1px);
+}
+
+/* Alert variant - Liquid glass with alert color */
+.glass-button-alert {
+	border-color: rgba(163, 55, 106, 0.9); /* Alert 500 */
+	background-color: rgba(245, 235, 241, 0.85); /* Alert 100 with opacity - liquid glass */
+	color: var(--color-alert-600); /* Alert 600 - darker for text */
+	backdrop-filter: blur(8px); /* Liquid glass effect */
+}
+
+.glass-button-alert:hover {
+	border-color: rgba(163, 55, 106, 1); /* Alert 500 - full opacity */
+	background-color: rgba(245, 235, 241, 0.95); /* Alert 100 - more solid on hover */
+	color: var(--color-alert-700); /* Alert 700 - even darker on hover */
+	box-shadow: 0 4px 8px -1px rgba(163, 55, 106, 0.2); /* Alert colored shadow */
 	transform: translateY(-1px);
 }
 

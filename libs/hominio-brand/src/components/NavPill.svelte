@@ -131,6 +131,11 @@
 						</div>
 						<p class="connection-text">Waiting for permission...</p>
 					{:else if isConnecting}
+						<div class="connection-icon">
+							<svg class="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke-linecap="round"/>
+							</svg>
+						</div>
 						<p class="connection-text">Connecting...</p>
 					{:else if isCallActive}
 						{#if aiState === 'thinking'}
@@ -214,6 +219,11 @@
 					</div>
 					<p class="connection-text">Waiting for permission...</p>
 				{:else if isConnecting}
+					<div class="connection-icon">
+						<svg class="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke-linecap="round"/>
+						</svg>
+					</div>
 					<p class="connection-text">Connecting...</p>
 				{:else if isCallActive}
 					{#if aiState === 'thinking'}
@@ -340,42 +350,48 @@
 		padding: 0.5rem 1rem; /* Reduced padding */
 		border-radius: 1.5rem;
 		border: 1px solid rgba(0, 26, 66, 0.3); /* Primary 800 */
-		background-color: rgba(0, 26, 66, 0.95); /* Primary 800 - navpill bg */
+		background-color: var(--color-primary-800); /* Primary 800 - navpill bg */
 		backdrop-filter: blur(24px);
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 		color: white;
 		transition: background-color 0.3s ease, border-color 0.3s ease;
 	}
 	
-	/* Color-coded states - using brand colors */
+	/* Color-coded states - using design system tokens */
 	.modal-waiting .connection-content {
-		background-color: rgba(244, 208, 63, 0.95); /* Accent 500 - yellow - waiting for permission */
-		border-color: rgba(253, 233, 121, 0.5); /* Accent 300 */
+		background-color: var(--color-warning-500); /* Warning - orange - waiting for permission */
+		border-color: var(--color-warning-400);
+		opacity: 0.95;
 	}
 	
 	.modal-connecting .connection-content {
-		background-color: rgba(45, 166, 180, 0.95); /* Secondary 500 - teal - connecting */
-		border-color: rgba(102, 207, 219, 0.5); /* Secondary 300 */
+		background-color: var(--color-info-500); /* Info - purple/blue - connecting */
+		border-color: var(--color-info-400);
+		opacity: 0.95;
 	}
 	
 	.modal-listening .connection-content {
-		background-color: rgba(76, 169, 132, 0.95); /* Success 500 - green - listening */
-		border-color: rgba(110, 231, 183, 0.5); /* Success 300 */
+		background-color: var(--color-primary-800); /* Primary 800 - navy blue - listening */
+		border-color: var(--color-primary-700);
+		opacity: 0.95;
 	}
 	
 	.modal-thinking .connection-content {
-		background-color: rgba(45, 166, 180, 0.95); /* Secondary 500 - teal - thinking */
-		border-color: rgba(102, 207, 219, 0.5); /* Secondary 300 */
+		background-color: var(--color-success-500); /* Success - green - thinking */
+		border-color: var(--color-success-300);
+		opacity: 0.95;
 	}
 	
 	.modal-speaking .connection-content {
-		background-color: rgba(0, 66, 170, 0.95); /* Primary 500 - blue - speaking */
-		border-color: rgba(46, 100, 185, 0.5); /* Primary 400 */
+		background-color: var(--color-secondary-500); /* Secondary - teal - speaking */
+		border-color: var(--color-secondary-300);
+		opacity: 0.95;
 	}
 	
 	.modal-capability .connection-content {
-		background-color: rgba(0, 26, 66, 0.95); /* Primary 800 */
-		border-color: rgba(0, 26, 66, 0.9);
+		background-color: var(--color-primary-800); /* Primary 800 */
+		border-color: var(--color-primary-800);
+		opacity: 0.95;
 		padding: 1rem 1.25rem;
 		gap: 0.75rem;
 		position: relative;
@@ -396,8 +412,8 @@
 	}
 	
 	.request-access-btn {
-		background-color: rgba(0, 66, 170, 0.9); /* Primary 500 */
-		border: 1px solid rgba(0, 66, 170, 0.5);
+		background-color: var(--color-primary-500); /* Primary 500 */
+		border: 1px solid var(--color-primary-400);
 		color: white;
 		padding: 0.5rem 1rem;
 		border-radius: 0.5rem;
@@ -406,10 +422,12 @@
 		cursor: pointer;
 		transition: all 0.2s;
 		white-space: nowrap;
+		opacity: 0.9;
 	}
 	
 	.request-access-btn:hover {
-		background-color: rgba(0, 66, 170, 1);
+		background-color: var(--color-primary-600); /* Darker primary on hover */
+		opacity: 1;
 		transform: translateY(-1px);
 	}
 	
@@ -419,7 +437,7 @@
 		right: 0.5rem;
 		background: transparent;
 		border: none;
-		color: rgba(255, 255, 255, 0.7);
+		color: var(--color-alert-500); /* Alert - purple/magenta */
 		cursor: pointer;
 		padding: 0.25rem;
 		border-radius: 0.25rem;
@@ -427,11 +445,13 @@
 		align-items: center;
 		justify-content: center;
 		transition: all 0.2s;
+		opacity: 0.9; /* Slightly transparent but still visible */
 	}
 	
 	.close-modal-btn:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-		color: white;
+		background-color: var(--color-alert-100); /* Alert 100 with opacity */
+		color: var(--color-alert-600); /* Darker alert on hover */
+		opacity: 1; /* Fully opaque on hover */
 	}
 	
 	.connection-icon {
@@ -484,13 +504,14 @@
 		width: fit-content;
 		max-width: calc(100vw - 2rem);
 		border-radius: 9999px;
-		border: 1px solid rgba(0, 26, 66, 0.9); /* Primary 800 */
-		background-color: rgba(0, 26, 66, 0.95); /* Primary 800 - navpill bg */
+		border: 1px solid var(--color-primary-800); /* Primary 800 */
+		background-color: var(--color-primary-800); /* Primary 800 - navpill bg */
 		backdrop-filter: blur(24px) saturate(180%);
 		-webkit-backdrop-filter: blur(24px) saturate(180%);
 		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 		padding: 0.1875rem; /* Even smaller padding */
 		transition: all 0.2s;
+		opacity: 0.95;
 	}
 	
 	.nav-container {
@@ -559,24 +580,24 @@
 	}
 	
 	.call-btn-active {
-		background: #b91c1c; /* Alert error color - red-700 (darker, more prominent) */
-		border: 3px solid rgba(254, 202, 202, 1); /* Alert error border - red-100 */
+		background: var(--color-alert-500); /* Alert color - purple/magenta */
+		border: 3px solid var(--color-alert-300);
 	}
 	
 	.call-btn-active:hover:not(:disabled) {
-		background: #991b1b; /* Darker red-800 on hover */
-		box-shadow: 0 12px 24px rgba(185, 28, 28, 0.4);
+		background: var(--color-alert-600); /* Darker alert on hover */
+		box-shadow: 0 12px 24px rgba(163, 55, 106, 0.4); /* Alert 500 with opacity */
 		transform: translateY(-2px) scale(1.05);
 	}
 	
 	.call-btn-inactive {
-		background: #4ca984; /* Success brand color - solid green */
-		border: 3px solid rgba(76, 169, 132, 0.8);
+		background: var(--color-success-500); /* Success color - green */
+		border: 3px solid var(--color-success-300);
 	}
 	
 	.call-btn-inactive:hover:not(:disabled) {
-		background: #047857; /* Success 700 - darker green on hover */
-		box-shadow: 0 12px 24px rgba(76, 169, 132, 0.4);
+		background: var(--color-success-600); /* Darker success on hover */
+		box-shadow: 0 12px 24px rgba(76, 169, 132, 0.4); /* Success 500 with opacity */
 		transform: translateY(-2px) scale(1.05);
 	}
 	
@@ -652,9 +673,9 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;
-		border: 1px solid rgba(0, 26, 66, 0.9); /* Primary 800 */
-		background-color: #001a42; /* Primary 800 - buttons and navpill bg */
-		color: #e6ecf7; /* Primary 50 - button text/label color */
+		border: 1px solid var(--color-primary-800); /* Primary 800 */
+		background-color: var(--color-primary-800); /* Primary 800 - buttons and navpill bg */
+		color: var(--color-primary-50); /* Primary 50 - button text/label color */
 		padding: 0.75rem 1.5rem;
 		font-weight: 500;
 		font-size: 0.875rem;
@@ -668,9 +689,9 @@
 	}
 	
 	.cta-btn:hover {
-		border-color: rgba(0, 38, 98, 0.9); /* Primary 700 */
-		background-color: #002662; /* Primary 700 - button hover */
-		color: #e6ecf7; /* Primary 50 - keep text color */
+		border-color: var(--color-primary-700); /* Primary 700 */
+		background-color: var(--color-primary-700); /* Primary 700 - button hover */
+		color: var(--color-primary-50); /* Primary 50 - keep text color */
 		box-shadow: 0 4px 8px -1px rgb(0 0 0 / 0.12);
 		transform: translateY(-1px);
 	}
@@ -682,9 +703,9 @@
 		width: 44px; /* Match cta-btn height */
 		height: 44px; /* Match cta-btn height */
 		border-radius: 50%; /* Keep fully circular */
-		border: 1px solid rgba(0, 26, 66, 0.9); /* Primary 800 - same as cta-btn */
-		background-color: #001a42; /* Primary 800 - same as cta-btn */
-		color: #e6ecf7; /* Primary 50 - button text/label color */
+		border: 1px solid var(--color-primary-800); /* Primary 800 - same as cta-btn */
+		background-color: var(--color-primary-800); /* Primary 800 - same as cta-btn */
+		color: var(--color-primary-50); /* Primary 50 - button text/label color */
 		transition: all 0.2s;
 		cursor: pointer;
 		text-decoration: none;
@@ -694,9 +715,9 @@
 	}
 	
 	.cta-login-btn:hover {
-		background-color: #002662; /* Primary 700 - button hover */
-		border-color: rgba(0, 38, 98, 0.9); /* Primary 700 */
-		color: #e6ecf7; /* Primary 50 - keep text color */
+		background-color: var(--color-primary-700); /* Primary 700 - button hover */
+		border-color: var(--color-primary-700); /* Primary 700 */
+		color: var(--color-primary-50); /* Primary 50 - keep text color */
 		transform: scale(1.05);
 	}
 	
