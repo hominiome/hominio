@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { getZeroContext } from '$lib/zero-utils';
 	// Hotels query will be imported dynamically
-	import { GlassCard, LoadingSpinner, Alert, BackgroundBlobs } from '@hominio/brand';
+	import { GlassCard, LoadingSpinner, Alert } from '@hominio/brand';
 	import { loadAgentConfig, handleActionSkill, UIRenderer } from '@hominio/agents';
 	import { createAuthClient } from '@hominio/auth';
 
@@ -220,7 +220,6 @@
 </script>
 
 <div class="relative min-h-screen overflow-x-hidden bg-glass-gradient px-6 pt-[env(safe-area-inset-top)] pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
-	<BackgroundBlobs />
 
 	<div class="relative z-10 mx-auto max-w-6xl">
 		{#if showingSkillResult && skillResult && skillResultFunctionId}

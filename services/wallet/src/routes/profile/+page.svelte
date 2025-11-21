@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { createAuthClient } from '@hominio/auth';
 	import { goto } from '$app/navigation';
-	import { BackgroundBlobs, GlassCard, GlassButton, GlassInfoCard, LoadingSpinner, Alert, ProfileImage } from '@hominio/brand';
+	import { GlassCard, GlassButton, GlassInfoCard, LoadingSpinner, Alert, ProfileImage } from '@hominio/brand';
 	import type { Capability } from '@hominio/caps';
 
 	const authClient = createAuthClient();
@@ -128,7 +128,6 @@
 </script>
 
 <div class="min-h-screen bg-glass-gradient p-6 font-sans text-slate-800 antialiased selection:bg-blue-100">
-	<BackgroundBlobs />
 
 	<div class="relative mx-auto max-w-2xl pt-12">
 		{#if loading || $session.isPending}

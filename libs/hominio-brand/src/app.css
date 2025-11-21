@@ -238,6 +238,7 @@
 
 /* Background gradient */
 .bg-glass-gradient {
+	background: #fafafa; /* Simple light cream color - removed blob effects */
 	background: linear-gradient(to bottom right, #f8f9fa, #f2f4f6, #e9ecef);
 }
 

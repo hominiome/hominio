@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { GlassCard, LoadingSpinner, Alert, BackgroundBlobs } from '@hominio/brand';
+	import { GlassCard, LoadingSpinner, Alert } from '@hominio/brand';
 	import { loadAgentConfig, getMenuContextString } from '@hominio/agents';
 
 	// Load agent config
@@ -43,7 +43,6 @@
 </script>
 
 <div class="relative min-h-screen overflow-x-hidden bg-glass-gradient px-6 pt-[env(safe-area-inset-top)] pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
-	<BackgroundBlobs />
 
 	<div class="relative z-10 mx-auto max-w-6xl py-8">
 		<!-- Header -->

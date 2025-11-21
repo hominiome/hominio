@@ -1,6 +1,5 @@
 <script lang="ts">
 	import SnakeGame from './SnakeGame.svelte';
-	import BackgroundBlobs from './BackgroundBlobs.svelte';
 
 	let {
 		status = 500,
@@ -22,8 +21,6 @@
 </script>
 
 <div class="error-page">
-	<BackgroundBlobs />
-	
 	<div class="error-content">
 		{#if showGame}
 			<div class="game-section">
@@ -72,7 +69,7 @@
 		height: 100vh;
 		overflow-y: auto;
 		overflow-x: hidden;
-		background: linear-gradient(to bottom right, #f8f9fa, #f2f4f6, #e9ecef);
+		background: #fafafa; /* Simple light cream color */
 		display: flex;
 		align-items: flex-start;
 		justify-content: center;

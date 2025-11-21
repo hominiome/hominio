@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '@hominio/brand/app.css';
-	import { BackgroundBlobs, Footer, Favicon, NavPill } from '@hominio/brand';
+	import { Footer, Favicon, NavPill } from '@hominio/brand';
 	import { createAuthClient } from '@hominio/auth';
 	import { browser } from '$app/environment';
 	import { env as publicEnv } from '$env/dynamic/public';
@@ -85,7 +85,6 @@
 <Favicon />
 
 <div class="min-h-screen bg-glass-gradient flex flex-col font-sans">
-	<BackgroundBlobs />
 	
 	{@render children()}
 	

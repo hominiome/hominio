@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
-	import { BackgroundBlobs, GlassCard, GlassButton, LoadingSpinner } from '@hominio/brand';
+	import { GlassCard, GlassButton, LoadingSpinner } from '@hominio/brand';
 
 	const authClient = createAuthClient();
 	const session = authClient.useSession();
@@ -170,7 +170,6 @@
 </script>
 
 <div class="min-h-screen bg-glass-gradient p-6 font-sans text-slate-800 antialiased selection:bg-blue-100">
-	<BackgroundBlobs />
 
 	<div class="relative flex min-h-screen items-center justify-center">
 		<div class="w-full max-w-md">
