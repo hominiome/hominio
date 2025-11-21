@@ -1,4 +1,5 @@
 import { api } from "$lib/api-helpers";
+import { isTrustedOrigin } from "$lib/utils/domain";
 import type { RequestHandler } from "./$types";
 
 /**
@@ -8,6 +9,16 @@ import type { RequestHandler } from "./$types";
  */
 export const GET: RequestHandler = async ({ request }) => {
     console.log('[capabilities] GET /api/auth/capabilities called');
+    
+    // Validate origin for CORS
+    const origin = request.headers.get("origin");
+    if (origin && !isTrustedOrigin(origin)) {
+        return api.json(
+            { error: "Unauthorized: Untrusted origin" },
+            { status: 403 }
+        );
+    }
+    
     try {
         // Get authenticated session
         const session = await api.getAuthenticatedSession(request);
@@ -19,15 +30,35 @@ export const GET: RequestHandler = async ({ request }) => {
         // Get all capabilities for this user
         const capabilities = await api.caps.getCapabilities(principal);
 
-        return api.json({
-            capabilities,
-        });
+        // Add CORS headers if origin is present
+        const responseHeaders: HeadersInit = {};
+        if (origin) {
+            responseHeaders["Access-Control-Allow-Origin"] = origin;
+            responseHeaders["Access-Control-Allow-Credentials"] = "true";
+            responseHeaders["Access-Control-Allow-Methods"] = "GET, OPTIONS";
+            responseHeaders["Access-Control-Allow-Headers"] = "Content-Type, Cookie";
+        }
+
+        return api.json(
+            { capabilities },
+            { headers: responseHeaders }
+        );
     } catch (error) {
         console.error("[capabilities] Error:", error);
+        
+        // Add CORS headers to error responses too
+        const responseHeaders: HeadersInit = {};
+        if (origin) {
+            responseHeaders["Access-Control-Allow-Origin"] = origin;
+            responseHeaders["Access-Control-Allow-Credentials"] = "true";
+            responseHeaders["Access-Control-Allow-Methods"] = "GET, OPTIONS";
+            responseHeaders["Access-Control-Allow-Headers"] = "Content-Type, Cookie";
+        }
+        
         if (error instanceof Error && error.message.includes("Unauthorized")) {
             return api.json(
                 { error: error.message },
-                { status: 401 }
+                { status: 401, headers: responseHeaders }
             );
         }
         return api.json(
@@ -35,8 +66,26 @@ export const GET: RequestHandler = async ({ request }) => {
                 error: "Internal server error",
                 message: error instanceof Error ? error.message : "Unknown error",
             },
-            { status: 500 }
+            { status: 500, headers: responseHeaders }
         );
     }
+};
+
+/**
+ * Handle OPTIONS preflight requests
+ */
+export const OPTIONS: RequestHandler = async ({ request }) => {
+    const origin = request.headers.get("origin");
+    const headers = new Headers();
+
+    if (origin && isTrustedOrigin(origin)) {
+        headers.set("Access-Control-Allow-Origin", origin);
+        headers.set("Access-Control-Allow-Credentials", "true");
+        headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+        headers.set("Access-Control-Allow-Headers", "Content-Type, Cookie");
+        headers.set("Access-Control-Max-Age", "86400"); // 24 hours
+    }
+
+    return new Response(null, { status: 204, headers });
 };
 
