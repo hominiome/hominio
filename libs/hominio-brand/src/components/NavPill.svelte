@@ -369,8 +369,8 @@
 	}
 	
 	.modal-speaking .connection-content {
-		background-color: rgba(244, 208, 63, 0.95); /* Accent 500 - yellow - speaking */
-		border-color: rgba(253, 233, 121, 0.5); /* Accent 300 */
+		background-color: rgba(0, 66, 170, 0.95); /* Primary 500 - blue - speaking */
+		border-color: rgba(46, 100, 185, 0.5); /* Primary 400 */
 	}
 	
 	.modal-capability .connection-content {
@@ -559,12 +559,12 @@
 	}
 	
 	.call-btn-active {
-		background: rgb(220, 38, 38); /* Solid red - fully opaque */
-		border: 3px solid rgba(254, 202, 202, 1);
+		background: #dc2626; /* Alert error text color - red-600 */
+		border: 3px solid rgba(254, 202, 202, 1); /* Alert error border - red-100 */
 	}
 	
 	.call-btn-active:hover:not(:disabled) {
-		background: rgb(185, 28, 28); /* Darker red on hover */
+		background: #b91c1c; /* Darker red-700 on hover */
 		box-shadow: 0 12px 24px rgba(220, 38, 38, 0.4);
 		transform: translateY(-2px) scale(1.05);
 	}
