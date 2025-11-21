@@ -11,6 +11,7 @@ COPY package.json bun.lock* /temp/dev/
 COPY services/api/package.json /temp/dev/services/api/
 COPY libs/hominio-zero/ /temp/dev/libs/hominio-zero/
 COPY libs/hominio-caps/ /temp/dev/libs/hominio-caps/
+COPY libs/hominio-agents/ /temp/dev/libs/hominio-agents/
 RUN cd /temp/dev && bun install --ignore-scripts
 
 # Build the app
