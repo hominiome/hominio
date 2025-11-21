@@ -765,6 +765,78 @@ export async function seedCapabilityGroups(dbInstance: Kysely<any>) {
       }
     }
 
+    // Create "read all schemas" capability for the group
+    // This is needed so users can read schema information (e.g., to display hotels)
+    const groupPrincipal = `group:hominio-explorer`;
+    
+    const existingSchemaCapability = await dbInstance
+      .selectFrom("capabilities")
+      .selectAll()
+      .where("principal", "=", groupPrincipal)
+      .where("resource_type", "=", "data")
+      .where("resource_namespace", "=", "schema")
+      .where("resource_id", "=", "*")
+      .executeTakeFirst();
+
+    let schemaCapabilityId: string;
+
+    if (existingSchemaCapability) {
+      console.log("ℹ️  Read all schemas capability already exists, using existing capability\n");
+      schemaCapabilityId = existingSchemaCapability.id;
+    } else {
+      // Create the capability for the group
+      const schemaCapabilityResult = await dbInstance
+        .insertInto("capabilities")
+        .values({
+          id: sql`gen_random_uuid()`,
+          principal: groupPrincipal,
+          resource_type: "data",
+          resource_namespace: "schema",
+          resource_id: "*",
+          device_id: null,
+          actions: ["read"],
+          conditions: null,
+          metadata: {
+            group: "hominio-explorer",
+            issuedAt: new Date().toISOString(),
+            issuer: principal,
+          },
+          title: "Read All Schemas",
+          description: "Read access to all schema definitions",
+          created_at: sql`NOW()`,
+          updated_at: sql`NOW()`,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      schemaCapabilityId = schemaCapabilityResult.id;
+      console.log("✅ Created 'read all schemas' capability for Hominio Explorer group\n");
+    }
+
+    // Link schema capability to group (if not already linked)
+    const existingSchemaLink = await dbInstance
+      .selectFrom("capability_group_members")
+      .selectAll()
+      .where("group_id", "=", groupId)
+      .where("capability_id", "=", schemaCapabilityId)
+      .executeTakeFirst();
+
+    if (!existingSchemaLink) {
+      await dbInstance
+        .insertInto("capability_group_members")
+        .values({
+          id: sql`gen_random_uuid()`,
+          group_id: groupId,
+          capability_id: schemaCapabilityId,
+          created_at: sql`NOW()`,
+        })
+        .execute();
+
+      console.log("✅ Linked 'read all schemas' capability to Hominio Explorer group\n");
+    } else {
+      console.log("ℹ️  Schema capability already linked to group\n");
+    }
+
     console.log("✅ Capability group seeding completed!\n");
   } catch (error: any) {
     console.error("❌ Error seeding capability groups:", error.message);
