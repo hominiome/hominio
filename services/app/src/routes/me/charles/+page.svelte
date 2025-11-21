@@ -313,17 +313,19 @@
 				<!-- Back button - bottom left, aligned with nav pill -->
 				<button
 					onclick={goBackToAgent}
-					class="back-button"
+					class="nav-action-button"
 					aria-label="Back"
 				>
-					<svg class="back-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="nav-action-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
 					</svg>
 				</button>
 			</div>
 		{:else}
-			<!-- Agent Info Card -->
-			<div class="mb-8">
+			<!-- Main Charles View -->
+			<div class="relative">
+				<!-- Agent Info Card -->
+				<div class="mb-8">
 				<GlassCard class="overflow-hidden p-8">
 					<div class="flex flex-col items-center text-center md:flex-row md:text-left md:gap-6">
 						<div class="mb-4 md:mb-0">
@@ -438,19 +440,31 @@
 					</div>
 				{/if}
 			</div>
+			
+			<!-- Home button - bottom left, aligned with nav pill -->
+			<button
+				onclick={() => goto('/me')}
+				class="nav-action-button"
+				aria-label="Home"
+			>
+				<svg class="nav-action-button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+				</svg>
+			</button>
+			</div>
 		{/if}
 	</div>
-</div>
+	</div>
 
 <style>
-	.back-button {
+	.nav-action-button {
 		position: fixed;
 		bottom: 0;
 		left: 1rem;
 		z-index: 1000;
 		margin-bottom: max(env(safe-area-inset-bottom), 0.5rem);
-		width: 42px;
-		height: 42px;
+		width: 48px;
+		height: 48px;
 		border-radius: 9999px;
 		border: 1px solid var(--color-primary-800);
 		background-color: var(--color-primary-800);
@@ -465,15 +479,15 @@
 		cursor: pointer;
 	}
 	
-	.back-button:hover {
+	.nav-action-button:hover {
 		background-color: var(--color-primary-700);
 		border-color: var(--color-primary-700);
 		opacity: 1;
 	}
 	
-	.back-button-icon {
-		width: 1.25rem;
-		height: 1.25rem;
+	.nav-action-button-icon {
+		width: 1.5rem;
+		height: 1.5rem;
 		color: white;
 	}
 </style>
