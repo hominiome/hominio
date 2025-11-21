@@ -66,10 +66,7 @@
 		{#each categories as cat}
 			{#if menu[cat.id] && menu[cat.id].length > 0}
 				<div class="mb-8">
-					<h3 class="mb-3 text-lg sm:text-xl font-bold text-slate-800 flex items-center justify-center gap-2">
-						<svg width="20" height="20" class="sm:w-6 sm:h-6 text-[#2da6b4]" fill="currentColor" viewBox="0 0 24 24">
-							{@html cat.icon}
-						</svg>
+					<h3 class="mb-3 text-lg sm:text-xl font-bold text-slate-800 text-center">
 						{cat.name}
 					</h3>
 					<!-- Divider below category title -->
@@ -84,7 +81,7 @@
 								<div class="bg-[#2da6b4] text-white px-3 sm:px-6 py-3 sm:py-4 flex flex-col items-center justify-center flex-shrink-0" style="width: 100px; min-width: 100px;">
 									<div class="text-base sm:text-2xl font-bold whitespace-nowrap text-center">{formatPrice(item.price)}</div>
 									{#if item.type}
-										<div class="text-[10px] sm:text-xs uppercase tracking-wide mt-1 opacity-90 text-center">{item.type}</div>
+										<div class="text-[9px] sm:text-[10px] uppercase tracking-wide mt-1 opacity-90 text-center">{item.type}</div>
 									{/if}
 								</div>
 							</GlassCard>
@@ -97,12 +94,7 @@
 		<!-- Show single category -->
 		{#if menu[category] && menu[category].length > 0}
 			<div>
-				<h3 class="mb-3 text-lg sm:text-xl font-bold text-slate-800 flex items-center justify-center gap-2">
-					{#if categories.find(c => c.id === category)}
-						<svg width="20" height="20" class="sm:w-6 sm:h-6 text-[#2da6b4]" fill="currentColor" viewBox="0 0 24 24">
-							{@html categories.find(c => c.id === category).icon}
-						</svg>
-					{/if}
+				<h3 class="mb-3 text-lg sm:text-xl font-bold text-slate-800 text-center">
 					{categories.find(c => c.id === category)?.name || category}
 				</h3>
 				<!-- Divider below category title -->
