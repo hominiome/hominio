@@ -1,3 +1,11 @@
+## [0.12.5](https://github.com/hominiome/hominio/compare/v0.12.4...v0.12.5) (2025-11-21)
+
+
+### Bug Fixes
+
+* revert sync service to working configuration (remove --admin-password flag and AUTH_SECRET) ([87fdff6](https://github.com/hominiome/hominio/commit/87fdff6ee5157d7a6a7f4188f463effaecbca425))
+* revert sync service to working configuration (remove --admin-password flag) ([cd420fb](https://github.com/hominiome/hominio/commit/cd420fbe0f44c29139f42122a2cf2eba615e872f))
+
 ## [0.12.4](https://github.com/hominiome/hominio/compare/v0.12.3...v0.12.4) (2025-11-21)
 
 
