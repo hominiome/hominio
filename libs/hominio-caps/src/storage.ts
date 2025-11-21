@@ -124,7 +124,61 @@ export async function getCapabilities(principal: Principal): Promise<Capability[
     .where('principal', '=', principal)
     .execute();
 
-  return rows.map(rowToCapability);
+  const directCapabilities = rows.map(rowToCapability);
+  
+  // Also include group capabilities (expand groups into their member capabilities)
+  // Only check groups for user principals (not anon or service)
+  if (principal.startsWith('user:')) {
+    // Find all capability groups this user belongs to
+    const userGroups = await db
+      .selectFrom('capabilities')
+      .selectAll()
+      .where('principal', '=', principal)
+      .where('resource_type', '=', 'group')
+      .execute();
+
+    const groupCapabilities: Capability[] = [];
+    
+    for (const userGroup of userGroups) {
+      const groupName = userGroup.resource_namespace;
+      
+      // Get group info
+      const group = await db
+        .selectFrom('capability_groups')
+        .selectAll()
+        .where('name', '=', groupName)
+        .executeTakeFirst();
+      
+      if (!group) continue;
+      
+      // Find all capabilities in this group
+      const members = await db
+        .selectFrom('capability_group_members')
+        .innerJoin('capabilities', 'capabilities.id', 'capability_group_members.capability_id')
+        .selectAll('capabilities')
+        .where('capability_group_members.group_id', '=', group.id)
+        .execute();
+      
+      // Convert group member capabilities to user capabilities (with group metadata)
+      for (const member of members) {
+        const cap = rowToCapability(member);
+        // Add group metadata to indicate this is from a group
+        cap.metadata = {
+          ...cap.metadata,
+          group: groupName,
+          groupTitle: group.title,
+          isGroupCapability: true,
+        };
+        groupCapabilities.push(cap);
+      }
+    }
+    
+    // Combine direct capabilities with group capabilities
+    // Group capabilities are marked with metadata.isGroupCapability = true
+    return [...directCapabilities, ...groupCapabilities];
+  }
+  
+  return directCapabilities;
 }
 
 /**

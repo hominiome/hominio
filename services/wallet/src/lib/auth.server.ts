@@ -78,6 +78,8 @@ export const auth = betterAuth({
           }),
         ]
       : []),
+    // Note: Capability group auto-assign is handled via API endpoint /api/admin/capability-groups/auto-assign
+    // This can be called after signup or via a BetterAuth hook if available
   ],
   advanced: {
     // Enable cross-subdomain cookies ONLY in production (for subdomain sharing)

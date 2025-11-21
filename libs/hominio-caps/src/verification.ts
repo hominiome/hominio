@@ -58,7 +58,7 @@ export async function checkCapability(
     }
   }
 
-  // Step 2: Check capabilities table
+  // Step 2: Check direct capabilities first
   let query = db
     .selectFrom('capabilities')
     .selectAll()
@@ -127,6 +127,72 @@ export async function checkCapability(
     }
   }
 
+  // Step 3: Check group capabilities if no direct capability found
+  // Only check groups for user principals (not anon or service)
+  if (principal.startsWith('user:')) {
+    // Find all capability groups this user belongs to
+    const userGroups = await db
+      .selectFrom('capabilities')
+      .selectAll()
+      .where('principal', '=', principal)
+      .where('resource_type', '=', 'group')
+      .execute();
+
+    for (const userGroup of userGroups) {
+      // Extract group name from resource_namespace (e.g., "hominio-explorer")
+      const groupName = userGroup.resource_namespace;
+
+      // Find all capabilities in this group
+      const groupCapabilities = await db
+        .selectFrom('capability_group_members')
+        .innerJoin('capabilities', 'capabilities.id', 'capability_group_members.capability_id')
+        .innerJoin('capability_groups', 'capability_groups.id', 'capability_group_members.group_id')
+        .selectAll('capabilities')
+        .where('capability_groups.name', '=', groupName)
+        .where('capabilities.resource_type', '=', resource.type)
+        .where('capabilities.resource_namespace', '=', resource.namespace)
+        .execute();
+
+      // Check if any group capability allows the action
+      for (const groupCap of groupCapabilities) {
+        // Check resource ID match
+        if (resource.id) {
+          if (groupCap.resource_id !== '*' && groupCap.resource_id !== resource.id) {
+            continue; // Resource ID doesn't match
+          }
+        } else {
+          if (groupCap.resource_id !== null) {
+            continue; // Group capability has resource_id but resource doesn't
+          }
+        }
+
+        // Check device_id match for system resources
+        if (resource.type === 'system' && resource.device_id) {
+          if (groupCap.device_id !== resource.device_id) {
+            continue; // Device ID doesn't match
+          }
+        }
+
+        // Check if action is allowed
+        const groupActions = Array.isArray(groupCap.actions) ? groupCap.actions : JSON.parse(groupCap.actions as any);
+        if (groupActions.includes(action)) {
+          // Check conditions
+          if (groupCap.conditions) {
+            const conditions = groupCap.conditions;
+            if (conditions.expiresAt) {
+              const expiresAt = new Date(conditions.expiresAt);
+              if (expiresAt < new Date()) {
+                continue; // Capability expired
+              }
+            }
+          }
+          console.log(`[checkCapability] ✅ Access granted via group capability: ${groupName}`);
+          return true; // Group capability found and valid
+        }
+      }
+    }
+  }
+
   return false; // No matching capability found
 }
 
@@ -177,7 +243,7 @@ export async function getAllowedActions(
 
   const capabilities = await query.execute();
 
-  // Collect all allowed actions
+  // Collect all allowed actions from direct capabilities
   for (const cap of capabilities) {
     // Check conditions
     if (cap.conditions) {
@@ -195,6 +261,71 @@ export async function getAllowedActions(
     for (const action of capActions) {
       if (!actions.includes(action)) {
         actions.push(action);
+      }
+    }
+  }
+
+  // Also check group capabilities for user principals
+  if (principal.startsWith('user:')) {
+    // Find all capability groups this user belongs to
+    const userGroups = await db
+      .selectFrom('capabilities')
+      .selectAll()
+      .where('principal', '=', principal)
+      .where('resource_type', '=', 'group')
+      .execute();
+
+    for (const userGroup of userGroups) {
+      const groupName = userGroup.resource_namespace;
+
+      // Find all capabilities in this group that match the resource
+      const groupCapabilities = await db
+        .selectFrom('capability_group_members')
+        .innerJoin('capabilities', 'capabilities.id', 'capability_group_members.capability_id')
+        .innerJoin('capability_groups', 'capability_groups.id', 'capability_group_members.group_id')
+        .selectAll('capabilities')
+        .where('capability_groups.name', '=', groupName)
+        .where('capabilities.resource_type', '=', resource.type)
+        .where('capabilities.resource_namespace', '=', resource.namespace)
+        .execute();
+
+      for (const groupCap of groupCapabilities) {
+        // Check resource ID match
+        if (resource.id) {
+          if (groupCap.resource_id !== '*' && groupCap.resource_id !== resource.id) {
+            continue;
+          }
+        } else {
+          if (groupCap.resource_id !== null) {
+            continue;
+          }
+        }
+
+        // Check device_id match for system resources
+        if (resource.type === 'system' && resource.device_id) {
+          if (groupCap.device_id !== resource.device_id) {
+            continue;
+          }
+        }
+
+        // Check conditions
+        if (groupCap.conditions) {
+          const conditions = groupCap.conditions;
+          if (conditions.expiresAt) {
+            const expiresAt = new Date(conditions.expiresAt);
+            if (expiresAt < new Date()) {
+              continue; // Capability expired
+            }
+          }
+        }
+
+        // Add all actions from this group capability
+        const groupActions = Array.isArray(groupCap.actions) ? groupCap.actions : JSON.parse(groupCap.actions as any);
+        for (const action of groupActions) {
+          if (!actions.includes(action)) {
+            actions.push(action);
+          }
+        }
       }
     }
   }

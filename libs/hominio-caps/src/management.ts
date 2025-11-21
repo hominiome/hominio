@@ -166,3 +166,69 @@ export async function rejectCapabilityRequest(
   await updateCapabilityRequestStatus(requestId, 'rejected');
 }
 
+/**
+ * Grant a capability group to a principal
+ * This grants access to all capabilities in the group
+ * @param issuer - Who is granting (typically admin)
+ * @param principal - Who receives the group capability
+ * @param groupName - Name of the capability group (e.g., "hominio-explorer")
+ */
+export async function grantCapabilityGroup(
+  issuer: Principal,
+  principal: Principal,
+  groupName: string
+): Promise<void> {
+  const { getDb } = await import('./storage');
+  const db = getDb();
+  const { sql } = await import('kysely');
+
+  // Check if group exists
+  const group = await db
+    .selectFrom('capability_groups')
+    .selectAll()
+    .where('name', '=', groupName)
+    .executeTakeFirst();
+
+  if (!group) {
+    throw new Error(`Capability group "${groupName}" not found`);
+  }
+
+  // Check if user already has this group capability
+  const existingGroupCapability = await db
+    .selectFrom('capabilities')
+    .selectAll()
+    .where('principal', '=', principal)
+    .where('resource_type', '=', 'group')
+    .where('resource_namespace', '=', groupName)
+    .executeTakeFirst();
+
+  if (existingGroupCapability) {
+    // User already has this group, skip
+    return;
+  }
+
+  // Grant the group capability
+  await db
+    .insertInto('capabilities')
+    .values({
+      id: sql`gen_random_uuid()`,
+      principal: principal,
+      resource_type: 'group',
+      resource_namespace: groupName,
+      resource_id: null,
+      device_id: null,
+      actions: ['read'], // Group membership is essentially a "read" action
+      conditions: null,
+      metadata: {
+        group: groupName,
+        issuedAt: new Date().toISOString(),
+        issuer: issuer,
+      },
+      title: group.title,
+      description: `Membership in ${group.title} capability group`,
+      created_at: new Date(),
+      updated_at: new Date(),
+    })
+    .execute();
+}
+

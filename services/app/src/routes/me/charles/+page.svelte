@@ -290,7 +290,7 @@
 	<div class="relative z-10 mx-auto max-w-6xl">
 		{#if showingSkillResult && skillResult && skillResultFunctionId}
 			<!-- Skill Result View (replaces agent UI) -->
-			<div class="pt-8">
+			<div class="pt-8 relative">
 				<!-- Mobile: No GlassCard wrapper -->
 				<div class="sm:hidden">
 					<UIRenderer 
@@ -309,6 +309,18 @@
 						/>
 					</GlassCard>
 				</div>
+				
+				<!-- Back button - bottom left, aligned with nav pill center -->
+				<button
+					onclick={goBackToAgent}
+					class="fixed bottom-[calc(21px+env(safe-area-inset-bottom))] left-4 z-50 w-[42px] h-[42px] rounded-full bg-[#fef3e2] border border-[#f5e6d3] flex items-center justify-center shadow-sm hover:bg-[#fce8c7] transition-colors sm:bottom-[calc(21px+env(safe-area-inset-bottom))]"
+					aria-label="Back"
+					style="transform: translateY(-50%);"
+				>
+					<svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+					</svg>
+				</button>
 			</div>
 		{:else}
 			<!-- Agent Info Card -->

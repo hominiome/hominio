@@ -227,9 +227,16 @@
 								<div class="capability-header">
 									<!-- Left: Title and Description -->
 									<div class="capability-title-section">
-										{#if capability.title}
-											<h3 class="capability-title">{capability.title}</h3>
-										{/if}
+										<div class="flex items-center gap-2 mb-1">
+											{#if capability.title}
+												<h3 class="capability-title">{capability.title}</h3>
+											{/if}
+											{#if capability.metadata?.isGroupCapability}
+												<span class="inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800">
+													Group: {capability.metadata.groupTitle || capability.metadata.group}
+												</span>
+											{/if}
+										</div>
 										{#if capability.description}
 											<p class="capability-description">
 												{capability.description} - GRANTED {new Date(capability.created_at).toLocaleDateString('de-DE', { month: 'short', day: 'numeric' })}

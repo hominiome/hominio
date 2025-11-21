@@ -120,6 +120,68 @@ export async function migrateCapabilities(dbInstance: Kysely<any>) {
 
     console.log("✅ Created capability_requests table");
 
+    // Capability groups table
+    await dbInstance.schema
+      .createTable("capability_groups")
+      .ifNotExists()
+      .addColumn("id", "uuid", (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`))
+      .addColumn("name", "varchar(255)", (col) => col.notNull().unique())
+      .addColumn("title", "varchar(255)", (col) => col.notNull())
+      .addColumn("description", "text")
+      .addColumn("managed_by", "varchar(255)", (col) => col.notNull()) // Principal who manages this group (e.g., "user:admin-id")
+      .addColumn("metadata", sql`jsonb`, (col) => col.defaultTo(sql`'{}'::jsonb`))
+      .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`))
+      .addColumn("updated_at", "timestamp", (col) => col.defaultTo(sql`NOW()`))
+      .execute();
+
+    console.log("✅ Created capability_groups table");
+
+    // Capability group members table (links capabilities to groups)
+    await dbInstance.schema
+      .createTable("capability_group_members")
+      .ifNotExists()
+      .addColumn("id", "uuid", (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`))
+      .addColumn("group_id", "uuid", (col) => 
+        col.notNull().references("capability_groups.id").onDelete("cascade")
+      )
+      .addColumn("capability_id", "uuid", (col) => 
+        col.notNull().references("capabilities.id").onDelete("cascade")
+      )
+      .addColumn("created_at", "timestamp", (col) => col.defaultTo(sql`NOW()`))
+      .execute();
+
+    // Add unique constraint on (group_id, capability_id)
+    await sql`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_capability_group_members_unique 
+      ON capability_group_members(group_id, capability_id)
+    `.execute(dbInstance);
+
+    console.log("✅ Created capability_group_members table");
+
+    // Add indexes for faster lookups
+    await dbInstance.schema
+      .createIndex("idx_capability_groups_name")
+      .ifNotExists()
+      .on("capability_groups")
+      .column("name")
+      .execute();
+
+    await dbInstance.schema
+      .createIndex("idx_capability_group_members_group_id")
+      .ifNotExists()
+      .on("capability_group_members")
+      .column("group_id")
+      .execute();
+
+    await dbInstance.schema
+      .createIndex("idx_capability_group_members_capability_id")
+      .ifNotExists()
+      .on("capability_group_members")
+      .column("capability_id")
+      .execute();
+
+    console.log("✅ Created indexes for capability groups");
+
     // Add username column to user table (if it doesn't exist)
     // Username is optional (nullable), unique, and used for name-scoped schema IDs (e.g., @hominio/hotel-v1)
     // Admin user will have username "@hominio" set via seedAdminUsername()
@@ -240,137 +302,6 @@ export async function migrateCapabilities(dbInstance: Kysely<any>) {
   } catch (error) {
     console.error("❌ Capabilities migration failed:", error);
     throw error;
-  }
-}
-
-/**
- * Migrate capabilities to use schema ID instead of old naming conventions
- * Updates capabilities that use old formats (like "hotel-schema-v1") to use the schema ID (nanoid)
- */
-export async function migrateCapabilitiesToSchemaIds(dbInstance: Kysely<any>) {
-  console.log("🔄 Migrating capabilities to use schema IDs...\n");
-
-  if (!zeroDb) {
-    console.log("⚠️  ZERO_POSTGRES_SECRET not set. Cannot migrate capabilities to schema IDs.\n");
-    console.log("   Skipping capability migration. Set ZERO_POSTGRES_SECRET to enable.\n");
-    return;
-  }
-
-  try {
-    // Get admin username for name-scoped schema lookup
-    const ADMIN = process.env.ADMIN;
-    let adminUsername = "@hominio"; // Default fallback
-    
-    if (ADMIN) {
-      try {
-        const adminUser = await dbInstance
-          .selectFrom("user")
-          .select(["username"])
-          .where("id", "=", ADMIN)
-          .executeTakeFirst();
-        if (adminUser?.username) {
-          adminUsername = adminUser.username;
-        }
-      } catch (error) {
-        console.log(`⚠️  Could not fetch admin username, using default: ${adminUsername}\n`);
-      }
-    }
-
-    // Find all capabilities with resource_type = 'data' that might need updating
-    // These could have old formats like "hotel-schema-v1" or name-scoped identifiers
-    const dataCapabilities = await dbInstance
-      .selectFrom("capabilities")
-      .selectAll()
-      .where("resource_type", "=", "data")
-      .execute();
-
-    console.log(`📊 Found ${dataCapabilities.length} data capabilities to check\n`);
-
-    let updatedCount = 0;
-    let skippedCount = 0;
-
-    for (const capability of dataCapabilities) {
-      const currentNamespace = capability.resource_namespace;
-      
-      // Skip "schema" namespace (that's for schema management, not a schema ID)
-      if (currentNamespace === "schema") {
-        skippedCount++;
-        continue;
-      }
-      
-      // Skip if already using a schema ID format (nanoid-like, typically 21 chars)
-      // Schema IDs are nanoids, which are typically 21 characters and don't contain @ or /
-      // Name-scoped identifiers like "@hominio/hotel-v1" should be converted to schema IDs
-      if (currentNamespace.length === 21 && currentNamespace.match(/^[A-Za-z0-9_-]+$/) && !currentNamespace.includes('@') && !currentNamespace.includes('/')) {
-        skippedCount++;
-        continue;
-      }
-
-      // Try to find schema by old format names
-      let schemaId: string | null = null;
-      let schemaName: string | null = null;
-
-      // Try different possible old formats
-      const possibleNames = [
-        currentNamespace, // Try as-is first (might already be name-scoped like @hominio/hotel-v1)
-        currentNamespace.replace(/^hotel-schema/, `${adminUsername}/hotel`), // hotel-schema-v1 -> @hominio/hotel-v1
-        currentNamespace.replace(/^hotel-schema-v(\d+)$/, `${adminUsername}/hotel-v$1`), // hotel-schema-v1 -> @hominio/hotel-v1 (with version)
-        currentNamespace.replace(/^schema-/, `${adminUsername}/`), // schema-* -> @hominio/*
-        `${adminUsername}/${currentNamespace}`, // Just prepend scope
-        `${adminUsername}/${currentNamespace}-v1`, // Add -v1 suffix
-        currentNamespace.replace(/^data:/, ''), // Remove data: prefix if present
-      ];
-
-      for (const nameToTry of possibleNames) {
-        try {
-          const schemaResult = await sql`
-            SELECT id, name FROM schema 
-            WHERE name = ${nameToTry}
-            LIMIT 1
-          `.execute(zeroDb);
-
-          if (schemaResult.rows.length > 0) {
-            schemaId = schemaResult.rows[0].id as string;
-            schemaName = schemaResult.rows[0].name as string;
-            console.log(`✅ Found schema: ${schemaName} (ID: ${schemaId})\n`);
-            break;
-          }
-        } catch (error) {
-          // Continue to next name
-        }
-      }
-
-      if (!schemaId) {
-        console.log(`⚠️  Could not find schema for namespace "${currentNamespace}", skipping capability ${capability.id}\n`);
-        skippedCount++;
-        continue;
-      }
-
-      // Update capability to use schema ID
-      try {
-        await dbInstance
-          .updateTable("capabilities")
-          .set({
-            resource_namespace: schemaId,
-            updated_at: sql`NOW()`,
-          })
-          .where("id", "=", capability.id)
-          .execute();
-
-        console.log(`✅ Updated capability ${capability.id}: ${currentNamespace} -> ${schemaId} (${schemaName})\n`);
-        updatedCount++;
-      } catch (error: any) {
-        console.error(`❌ Error updating capability ${capability.id}: ${error.message}\n`);
-      }
-    }
-
-    console.log(`\n✅ Capability migration completed!\n`);
-    console.log(`   Updated: ${updatedCount} capabilities\n`);
-    console.log(`   Skipped: ${skippedCount} capabilities\n`);
-  } catch (error: any) {
-    console.error("❌ Error migrating capabilities to schema IDs:", error.message);
-    // Don't throw - this is optional, migration can continue
-    console.log("⚠️  Continuing migration despite capability update error...\n");
   }
 }
 
@@ -669,13 +600,279 @@ export async function seedAdminCapabilities(dbInstance: Kysely<any>) {
   }
 }
 
+/**
+ * Seed default capability groups
+ * Creates "Hominio Explorer" group with "read all hotels" sub-capability
+ */
+export async function seedCapabilityGroups(dbInstance: Kysely<any>) {
+  console.log("🔄 Seeding capability groups...\n");
+
+  try {
+    const ADMIN = process.env.ADMIN;
+    if (!ADMIN) {
+      console.log("⚠️  ADMIN not set. Skipping capability group seeding.\n");
+      return;
+    }
+
+    const principal = `user:${ADMIN}`;
+
+    // Check if "Hominio Explorer" group already exists
+    const existingGroup = await dbInstance
+      .selectFrom("capability_groups")
+      .selectAll()
+      .where("name", "=", "hominio-explorer")
+      .executeTakeFirst();
+
+    let groupId: string;
+
+    if (existingGroup) {
+      console.log("ℹ️  Hominio Explorer group already exists, using existing group\n");
+      groupId = existingGroup.id;
+    } else {
+      // Create "Hominio Explorer" group
+      const groupResult = await dbInstance
+        .insertInto("capability_groups")
+        .values({
+          id: sql`gen_random_uuid()`,
+          name: "hominio-explorer",
+          title: "Hominio Explorer",
+          description: "Free tier capability group that unlocks basic features like reading hotel listings",
+          managed_by: principal,
+          metadata: {
+            tier: "free",
+            autoAssignOnSignup: true,
+          },
+          created_at: sql`NOW()`,
+          updated_at: sql`NOW()`,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      groupId = groupResult.id;
+      console.log("✅ Created Hominio Explorer capability group\n");
+    }
+
+    // Get hotel schema ID for the "read all hotels" capability
+    let hotelSchemaId: string | null = null;
+    const ZERO_POSTGRES_SECRET = process.env.ZERO_POSTGRES_SECRET;
+
+    if (ZERO_POSTGRES_SECRET) {
+      try {
+        const zeroDb = new Kysely<any>({
+          dialect: new NeonDialect({
+            connection: neon(ZERO_POSTGRES_SECRET),
+          }),
+        });
+
+        // Get admin username for name-scoped schema lookup
+        const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "@hominio";
+        const schemaName = `${ADMIN_USERNAME}/hotel-v1`;
+
+        const schemaResult = await sql`
+          SELECT id FROM schema 
+          WHERE name = ${schemaName}
+          LIMIT 1
+        `.execute(zeroDb);
+
+        if (schemaResult.rows.length > 0) {
+          hotelSchemaId = schemaResult.rows[0].id as string;
+          console.log(`✅ Found hotel schema ID: ${hotelSchemaId}\n`);
+        } else {
+          console.log(`⚠️  Hotel schema "${schemaName}" not found in Zero database\n`);
+          console.log(`   Skipping "read all hotels" capability creation.\n`);
+        }
+      } catch (error: any) {
+        console.log(`⚠️  Could not query Zero database for hotel schema: ${error.message}\n`);
+        console.log(`   Skipping "read all hotels" capability creation.\n`);
+      }
+    } else {
+      console.log(`⚠️  ZERO_POSTGRES_SECRET not set. Cannot query for hotel schema ID.\n`);
+      console.log(`   Skipping "read all hotels" capability creation.\n`);
+    }
+
+    // Create "read all hotels" capability if we have the schema ID
+    if (hotelSchemaId) {
+      // Check if capability already exists (for the group, not for a specific user)
+      // Group capabilities are stored with a special principal format: "group:hominio-explorer"
+      const groupPrincipal = `group:hominio-explorer`;
+      
+      const existingCapability = await dbInstance
+        .selectFrom("capabilities")
+        .selectAll()
+        .where("principal", "=", groupPrincipal)
+        .where("resource_type", "=", "data")
+        .where("resource_namespace", "=", hotelSchemaId)
+        .where("resource_id", "=", "*")
+        .executeTakeFirst();
+
+      let capabilityId: string;
+
+      if (existingCapability) {
+        console.log("ℹ️  Read all hotels capability already exists, using existing capability\n");
+        capabilityId = existingCapability.id;
+      } else {
+        // Create the capability for the group
+        const capabilityResult = await dbInstance
+          .insertInto("capabilities")
+          .values({
+            id: sql`gen_random_uuid()`,
+            principal: groupPrincipal,
+            resource_type: "data",
+            resource_namespace: hotelSchemaId,
+            resource_id: "*",
+            device_id: null,
+            actions: ["read"],
+            conditions: null,
+            metadata: {
+              group: "hominio-explorer",
+              issuedAt: new Date().toISOString(),
+              issuer: principal,
+            },
+            title: "Read All Hotels",
+            description: "Read access to all hotel listings",
+            created_at: sql`NOW()`,
+            updated_at: sql`NOW()`,
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow();
+
+        capabilityId = capabilityResult.id;
+        console.log("✅ Created 'read all hotels' capability for Hominio Explorer group\n");
+      }
+
+      // Link capability to group (if not already linked)
+      const existingLink = await dbInstance
+        .selectFrom("capability_group_members")
+        .selectAll()
+        .where("group_id", "=", groupId)
+        .where("capability_id", "=", capabilityId)
+        .executeTakeFirst();
+
+      if (!existingLink) {
+        await dbInstance
+          .insertInto("capability_group_members")
+          .values({
+            id: sql`gen_random_uuid()`,
+            group_id: groupId,
+            capability_id: capabilityId,
+            created_at: sql`NOW()`,
+          })
+          .execute();
+
+        console.log("✅ Linked 'read all hotels' capability to Hominio Explorer group\n");
+      } else {
+        console.log("ℹ️  Capability already linked to group\n");
+      }
+    }
+
+    console.log("✅ Capability group seeding completed!\n");
+  } catch (error: any) {
+    console.error("❌ Error seeding capability groups:", error.message);
+    console.log("⚠️  Continuing migration despite capability group seeding error...\n");
+  }
+}
+
+/**
+ * Grant Hominio Explorer group capability to all existing users
+ * This should be called after seeding capability groups
+ */
+export async function grantGroupCapabilityToAllUsers(dbInstance: Kysely<any>) {
+  console.log("🔄 Granting Hominio Explorer group capability to all users...\n");
+
+  try {
+    const ADMIN = process.env.ADMIN;
+    if (!ADMIN) {
+      console.log("⚠️  ADMIN not set. Skipping group capability grant.\n");
+      return;
+    }
+
+    const issuerPrincipal = `user:${ADMIN}`;
+
+    // Check if Hominio Explorer group exists
+    const group = await dbInstance
+      .selectFrom("capability_groups")
+      .selectAll()
+      .where("name", "=", "hominio-explorer")
+      .executeTakeFirst();
+
+    if (!group) {
+      console.log("⚠️  Hominio Explorer group not found. Run seedCapabilityGroups first.\n");
+      return;
+    }
+
+    // Get all users
+    const users = await dbInstance
+      .selectFrom("user")
+      .select(["id"])
+      .execute();
+
+    console.log(`📊 Found ${users.length} users\n`);
+
+    let grantedCount = 0;
+    let skippedCount = 0;
+
+    for (const user of users) {
+      const principal = `user:${user.id}`;
+
+      // Check if user already has this group capability
+      const existingGroupCapability = await dbInstance
+        .selectFrom("capabilities")
+        .selectAll()
+        .where("principal", "=", principal)
+        .where("resource_type", "=", "group")
+        .where("resource_namespace", "=", "hominio-explorer")
+        .executeTakeFirst();
+
+      if (existingGroupCapability) {
+        skippedCount++;
+        continue;
+      }
+
+      // Grant the group capability
+      await dbInstance
+        .insertInto("capabilities")
+        .values({
+          id: sql`gen_random_uuid()`,
+          principal: principal,
+          resource_type: "group",
+          resource_namespace: "hominio-explorer",
+          resource_id: null,
+          device_id: null,
+          actions: ["read"],
+          conditions: null,
+          metadata: {
+            group: "hominio-explorer",
+            issuedAt: new Date().toISOString(),
+            issuer: issuerPrincipal,
+            autoGranted: true,
+          },
+          title: group.title,
+          description: `Membership in ${group.title} capability group`,
+          created_at: sql`NOW()`,
+          updated_at: sql`NOW()`,
+        })
+        .execute();
+
+      grantedCount++;
+    }
+
+    console.log(`✅ Group capability grant completed!\n`);
+    console.log(`   Granted: ${grantedCount} users\n`);
+    console.log(`   Skipped: ${skippedCount} users (already had capability)\n`);
+  } catch (error: any) {
+    console.error("❌ Error granting group capability to users:", error.message);
+    console.log("⚠️  Continuing migration despite group capability grant error...\n");
+  }
+}
+
 // Run capabilities migration if this file is executed directly
 // This allows running: bun run auth.migrate.ts
 if (import.meta.main) {
   migrateCapabilities(db)
-    .then(() => migrateCapabilitiesToSchemaIds(db))
     .then(() => seedAdminUsername(db))
     .then(() => seedAdminCapabilities(db))
+    .then(() => seedCapabilityGroups(db))
+    .then(() => grantGroupCapabilityToAllUsers(db))
     .then(() => {
       console.log("✨ Capabilities migration completed!");
       process.exit(0);

@@ -307,6 +307,7 @@
 			<!-- Left: Logo - Links to app service -->
 			<a href={getAppUrl()} class="nav-logo-link" aria-label="Go to app">
 				<img src="/brand/logo_clean.png" alt="Home" class="nav-logo" />
+				<span class="nav-logo-text">Back to App</span>
 			</a>
 			
 			<!-- Center: Call Button -->
@@ -604,6 +605,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
+		gap: 0.5rem;
 		background: transparent;
 		cursor: pointer;
 		padding: 0.375rem; /* Slightly more padding */
@@ -621,6 +623,15 @@
 		width: 34px; /* Bit larger */
 		height: 34px;
 		border-radius: 50%;
+		flex-shrink: 0;
+	}
+	
+	.nav-logo-text {
+		display: none; /* Hidden on desktop */
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: rgba(255, 255, 255, 0.9);
+		white-space: nowrap;
 	}
 	
 	/* Center Call Button - Larger and overhanging */
@@ -644,7 +655,7 @@
 		cursor: pointer;
 		transition: all 0.25s ease-out;
 		color: white;
-		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+		/* Removed bottom shadow - only keep top shadow on hover */
 		/* Overhang above and below the nav pill */
 		margin-top: -12px;
 		margin-bottom: -12px;
@@ -849,7 +860,15 @@
 			font-size: 0.8125rem;
 		}
 		
-		.nav-logo-link,
+		.nav-logo-link {
+			padding: 0.3125rem 0.5rem;
+			border-radius: 9999px;
+		}
+		
+		.nav-logo-text {
+			display: block; /* Show text on mobile */
+		}
+		
 		.nav-user-link {
 			padding: 0.3125rem;
 		}

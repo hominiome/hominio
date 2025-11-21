@@ -60,19 +60,8 @@
 </style>
 
 <div>
-	<div class="relative flex items-center justify-center mb-3">
+	<div class="flex items-center justify-center mb-3">
 		<h2 class="text-xl sm:text-2xl font-bold text-slate-900 text-center">Speisekarte</h2>
-		{#if onClose}
-			<button
-				onclick={onClose}
-				class="absolute right-0 text-slate-400 hover:text-slate-600 transition-colors"
-				aria-label="Close"
-			>
-				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-				</svg>
-			</button>
-		{/if}
 	</div>
 	<!-- Divider below Speisekarte title -->
 	<div class="border-b border-slate-200/60 mb-6"></div>

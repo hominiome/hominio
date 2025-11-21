@@ -22,11 +22,12 @@
         };
     }
 
-    type TabType = 'pending' | 'granted';
+    type TabType = 'pending' | 'granted' | 'groups';
 
     let { data } = $props();
     let requests = $state<RequestWithUserInfo[]>(data.requests || []);
     let capabilities = $state<CapabilityWithUserInfo[]>(data.capabilities || []);
+    let capabilityGroups = $state<any[]>([]);
     let activeTab = $state<TabType>('pending');
     let loading = $state(false);
     let error = $state<string | null>(null);
@@ -100,12 +101,15 @@
         try {
             const walletUrl = getWalletUrl();
             
-            // Fetch both requests and capabilities
-            const [requestsResponse, capabilitiesResponse] = await Promise.all([
+            // Fetch requests, capabilities, and groups
+            const [requestsResponse, capabilitiesResponse, groupsResponse] = await Promise.all([
                 fetch(`${walletUrl}/api/admin/capability-requests`, {
                     credentials: "include",
                 }),
                 fetch(`${walletUrl}/api/admin/capabilities`, {
+                    credentials: "include",
+                }),
+                fetch(`${walletUrl}/api/admin/capability-groups`, {
                     credentials: "include",
                 }),
             ]);
@@ -116,11 +120,16 @@
             if (!capabilitiesResponse.ok) {
                 throw new Error("Failed to fetch capabilities");
             }
+            if (!groupsResponse.ok) {
+                throw new Error("Failed to fetch capability groups");
+            }
 
             const requestsData = await requestsResponse.json();
             const capabilitiesData = await capabilitiesResponse.json();
+            const groupsData = await groupsResponse.json();
             
             requests = requestsData.requests || [];
+            capabilityGroups = groupsData.groups || [];
             
             // Ensure capabilities have user info structure
             capabilities = (capabilitiesData.capabilities || []).map((cap: any) => {
@@ -285,6 +294,16 @@
                     <span class="tab-badge">{capabilities.length}</span>
                 {/if}
             </button>
+            <button
+                onclick={() => activeTab = 'groups'}
+                class="tab-button"
+                class:active={activeTab === 'groups'}
+            >
+                Capability Groups
+                {#if capabilityGroups.length > 0}
+                    <span class="tab-badge">{capabilityGroups.length}</span>
+                {/if}
+            </button>
         </div>
 
         {#if error}
@@ -437,9 +456,16 @@
                                 
                                 <!-- Middle: Title and Description -->
                                 <div class="admin-capability-title-section">
-                                    {#if capability.title}
-                                        <h3 class="admin-capability-title">{capability.title}</h3>
-                                    {/if}
+                                    <div class="flex items-center gap-2 mb-1">
+                                        {#if capability.title}
+                                            <h3 class="admin-capability-title">{capability.title}</h3>
+                                        {/if}
+                                        {#if capability.metadata?.isGroupCapability}
+                                            <span class="inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800">
+                                                Group: {capability.metadata.groupTitle || capability.metadata.group}
+                                            </span>
+                                        {/if}
+                                    </div>
                                     {#if capability.description}
                                         <p class="admin-capability-description">
                                             {capability.description} - GRANTED {new Date(capability.created_at).toLocaleDateString('de-DE', { month: 'short', day: 'numeric' })}
@@ -496,6 +522,56 @@
                                         </svg>
                                     </GlassButton>
                                 </div>
+                            </div>
+                        </GlassCard>
+                    {/each}
+                </div>
+            {/if}
+        {:else if activeTab === 'groups'}
+            {#if loading && capabilityGroups.length === 0}
+                <div class="flex items-center justify-center py-12">
+                    <LoadingSpinner />
+                    <p class="ml-4 text-sm font-medium text-slate-500">Loading groups...</p>
+                </div>
+            {:else if capabilityGroups.length === 0}
+                <GlassCard class="p-8 text-center">
+                    <p class="text-slate-600">No capability groups found.</p>
+                </GlassCard>
+            {:else}
+                <div class="space-y-4">
+                    {#each capabilityGroups as group (group.id)}
+                        <GlassCard class="p-6">
+                            <div class="mb-4">
+                                <h3 class="text-xl font-bold text-slate-900 mb-1">{group.title}</h3>
+                                <p class="text-sm text-slate-600">{group.description || 'No description'}</p>
+                                <p class="text-xs text-slate-500 mt-1">Group: {group.name}</p>
+                            </div>
+                            
+                            <div class="border-t border-slate-200 pt-4">
+                                <h4 class="text-sm font-semibold text-slate-700 mb-3">Sub-capabilities ({group.members.length})</h4>
+                                {#if group.members.length === 0}
+                                    <p class="text-sm text-slate-500">No capabilities in this group yet.</p>
+                                {:else}
+                                    <div class="space-y-2">
+                                        {#each group.members as member (member.id)}
+                                            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                                <div>
+                                                    <p class="text-sm font-medium text-slate-900">{member.title || 'Untitled Capability'}</p>
+                                                    <p class="text-xs text-slate-600 font-mono">
+                                                        {member.resource_type}:{member.resource_namespace}{member.resource_id ? `:${member.resource_id}` : ''}
+                                                    </p>
+                                                </div>
+                                                <div class="flex gap-1">
+                                                    {#each member.actions as action}
+                                                        <span class="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+                                                            {action}
+                                                        </span>
+                                                    {/each}
+                                                </div>
+                                            </div>
+                                        {/each}
+                                    </div>
+                                {/if}
                             </div>
                         </GlassCard>
                     {/each}
