@@ -1,3 +1,11 @@
+## [0.12.7](https://github.com/hominiome/hominio/compare/v0.12.6...v0.12.7) (2025-11-21)
+
+
+### Bug Fixes
+
+* improve sync service deployment config and remove deprecated flags ([8237e2a](https://github.com/hominiome/hominio/commit/8237e2af95d65d28908663af47a2b7916ac0bda2))
+* improve sync service health checks and deployment reliability ([3780cf1](https://github.com/hominiome/hominio/commit/3780cf1502c111960162f0c28d8e1ccd47dbe411))
+
 ## [0.12.6](https://github.com/hominiome/hominio/compare/v0.12.5...v0.12.6) (2025-11-21)
 
 
