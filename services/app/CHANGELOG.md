@@ -1,3 +1,10 @@
+## [0.12.13](https://github.com/hominiome/hominio/compare/v0.12.12...v0.12.13) (2025-11-21)
+
+
+### Bug Fixes
+
+* add PUBLIC_DOMAIN_API to wallet service and improve WebSocket auth logging ([dadf7ed](https://github.com/hominiome/hominio/commit/dadf7ed2b6e86b040f28baf618416700a8bb4379))
+
 ## [0.12.12](https://github.com/hominiome/hominio/compare/v0.12.11...v0.12.12) (2025-11-21)
 
 
