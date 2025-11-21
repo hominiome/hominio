@@ -24,5 +24,5 @@ ENTRYPOINT []
 # Cookie forwarding: --get-queries-forward-cookies and --mutate-forward-cookies
 # Note: Migrations run via GitHub Actions before deployment
 # Note: Schema permissions deployed via zero-deploy-permissions in GitHub Actions
-CMD ["sh", "-c", "zero-cache --upstream-db=\"${ZERO_UPSTREAM_DB:-${ZERO_POSTGRES_SECRET}}\" --change-db=\"${ZERO_CHANGE_DB:-${ZERO_UPSTREAM_DB:-${ZERO_POSTGRES_SECRET}}}\" --replica-file=/data/zero-replica.db --auth-secret=\"${ZERO_AUTH_SECRET}\" --admin-password=\"${ZERO_ADMIN_AUTH}\" --get-queries-url=\"${ZERO_GET_QUERIES_URL}\" --push-url=\"${ZERO_PUSH_URL}\" --get-queries-forward-cookies --mutate-forward-cookies"]
+CMD ["sh", "-c", "zero-cache --upstream-db=\"${ZERO_UPSTREAM_DB:-${ZERO_POSTGRES_SECRET}}\" --change-db=\"${ZERO_CHANGE_DB:-${ZERO_UPSTREAM_DB:-${ZERO_POSTGRES_SECRET}}}\" --replica-file=/data/zero-replica.db --auth-secret=\"${ZERO_AUTH_SECRET}\" --admin-password=\"${ZERO_ADMIN_AUTH:-${ZERO_AUTH_SECRET}}\" --port=4848 --listen=0.0.0.0:4848 --get-queries-url=\"${ZERO_GET_QUERIES_URL}\" --push-url=\"${ZERO_PUSH_URL}\" --get-queries-forward-cookies --mutate-forward-cookies"]
 
