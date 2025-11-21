@@ -8,6 +8,7 @@ import { handleOptions } from "./lib/middleware/cors";
 import { defaultDenyPlugin, allow, requireAuth } from "./lib/middleware/default-deny";
 
 const PORT = process.env.PORT || 4204;
+const HOST = process.env.HOST || '0.0.0.0';
 
 const app = new Elysia()
   // Global error handler
@@ -99,9 +100,9 @@ const app = new Elysia()
   // DEFAULT DENY: Lock down all routes by default (MUST be last)
   // This runs AFTER all routes are registered, so it can check if they're allowed
   .use(defaultDenyPlugin)
-  .listen(PORT);
+  .listen({ port: Number(PORT), hostname: HOST });
 
 console.log(
-  `🦊 API service is running at ${app.server?.hostname}:${app.server?.port}`
+  `🦊 API service is running at ${HOST}:${PORT}`
 );
 

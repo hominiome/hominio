@@ -69,14 +69,97 @@
 	const isAuthenticated = $derived(!!$session.data?.user);
 	const user = $derived($session.data?.user);
 	
-	// Hide NavPill on root route when not authenticated (has separate sign-in form)
-	const shouldHideNavPill = $derived.by(() => {
-		return $page.url.pathname === '/' && !isAuthenticated;
+	// Get app service URL
+	function getAppUrl() {
+		if (typeof window === 'undefined') return '/';
+		
+		const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.0.0.1');
+		const env = import.meta.env;
+		let appDomain = env.PUBLIC_DOMAIN_APP;
+		
+		if (!appDomain) {
+			if (isProduction) {
+				const hostname = window.location.hostname;
+				if (hostname.startsWith('wallet.')) {
+					appDomain = hostname.replace('wallet.', 'app.');
+				} else if (hostname.startsWith('www.')) {
+					appDomain = `app.${hostname.replace('www.', '')}`;
+				} else {
+					appDomain = `app.${hostname}`;
+				}
+			} else {
+				appDomain = 'localhost:4202';
+			}
+		}
+		
+		appDomain = appDomain.replace(/^https?:\/\//, '');
+		const protocol = appDomain.startsWith('localhost') || appDomain.startsWith('127.0.0.1') ? 'http' : 'https';
+		return `${protocol}://${appDomain}/me`;
+	}
+
+	// Get wallet service URL
+	function getWalletUrl() {
+		if (typeof window === 'undefined') return '/';
+		
+		const isProduction = window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('127.0.0.1');
+		const env = import.meta.env;
+		let walletDomain = env.PUBLIC_DOMAIN_WALLET;
+		
+		if (!walletDomain) {
+			if (isProduction) {
+				const hostname = window.location.hostname;
+				if (hostname.startsWith('app.')) {
+					walletDomain = hostname.replace('app.', 'wallet.');
+				} else if (hostname.startsWith('www.')) {
+					walletDomain = hostname.replace('www.', 'wallet.');
+				} else {
+					walletDomain = `wallet.${hostname}`;
+				}
+			} else {
+				walletDomain = 'localhost:4201';
+			}
+		}
+		
+		walletDomain = walletDomain.replace(/^https?:\/\//, '');
+		const protocol = walletDomain.startsWith('localhost') || walletDomain.startsWith('127.0.0.1') ? 'http' : 'https';
+		return `${protocol}://${walletDomain}`;
+	}
+
+	const appUrl = $derived.by(() => getAppUrl());
+	const walletUrl = $derived.by(() => getWalletUrl());
+	
+	// Determine CTA text and href based on auth status
+	const ctaText = $derived.by(() => {
+		if (isAuthenticated) {
+			return 'Open App';
+		}
+		return 'Sign up to waitlist now';
+	});
+	
+	const ctaHref = $derived.by(() => {
+		if (isAuthenticated) {
+			return appUrl;
+		}
+		return walletUrl;
+	});
+	
+	// Determine pill state based on auth status
+	const pillState = $derived.by(() => {
+		// Hide NavPill on root route when not authenticated (has separate sign-in form)
+		if ($page.url.pathname === '/' && !isAuthenticated) {
+			return 'hidden';
+		}
+		// When logged in, show CTA state with "Open App" button
+		if (isAuthenticated) {
+			return 'cta';
+		}
+		// When not logged in (and not on root), show default sign-in button
+		return 'default';
 	});
 	
 	// Debug: Log authentication state changes
 	$effect(() => {
-		console.log('[NavPill] Auth state changed:', { isAuthenticated, user: user?.name });
+		console.log('[NavPill] Auth state changed:', { isAuthenticated, user: user?.name, pillState });
 	});
 </script>
 
@@ -95,7 +178,10 @@
 	aiState={voiceCall.aiState}
 	onStartCall={handleStartCall}
 	onStopCall={handleStopCall}
-	pillState={shouldHideNavPill ? 'hidden' : 'default'}
+	pillState={pillState}
+	ctaText={ctaText}
+	ctaHref={ctaHref}
+	showLoginButton={!isAuthenticated}
 />
 
 {@render children()}

@@ -165,7 +165,8 @@
 							</GlassButton>
 						</div>
 					</div>
-				</GlassCard>
+				</div>
+			</GlassCard>
 
 			<!-- Capabilities Section -->
 			<div class="mt-12">
