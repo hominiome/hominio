@@ -496,9 +496,7 @@
 		gap: 0.625rem;
 		border-top: 1px solid rgba(148, 163, 184, 0.15);
 		margin-top: 0.75rem;
-		padding-top: 0.75rem;
-		padding-left: 1.25rem;
-		padding-right: 1.25rem;
+		padding: 1rem 1.25rem;
 	}
 	
 	.group-capability-badge {
