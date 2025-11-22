@@ -21,6 +21,10 @@ export async function buildSystemInstruction(agentConfig, options = {}) {
 		`- **${skill.name}** (skillId: "${skill.id}"): ${skill.description}`
 	).join('\n');
 	
+	// Debug: Log all skills for troubleshooting
+	console.log(`[system-instruction-builder] Building instruction for agent: ${agentConfig.id || 'unknown'}`);
+	console.log(`[system-instruction-builder] Found ${agentConfig.skills?.length || 0} skills:`, agentConfig.skills?.map(s => s.id) || []);
+	
 	// Load data context
 	let dataContextString = await loadDataContext(agentConfig);
 	

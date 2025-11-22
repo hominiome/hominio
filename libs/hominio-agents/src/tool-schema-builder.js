@@ -29,6 +29,9 @@ function paramToSchemaProperty(paramDef, skillId, isRequired) {
  * @returns {Object} JSON schema for parameters object
  */
 export function buildActionSkillArgsSchema(skills) {
+	// Build list of all skill IDs for description
+	const allSkillIds = [...new Set(skills.map(s => s.id))].join("', '");
+	
 	// Base properties that are always present
 	const properties = {
 		agentId: {
@@ -38,7 +41,7 @@ export function buildActionSkillArgsSchema(skills) {
 		},
 		skillId: {
 			type: "string",
-			description: "The skill ID to execute. For charles: 'show-menu'. For karl: 'view-calendar', 'create-calendar-entry', 'edit-calendar-entry', 'delete-calendar-entry'"
+			description: `The skill ID to execute. Available skills: '${allSkillIds}'.\n\nFor charles agent:\n- 'show-menu': Use when user asks about menu, food, restaurant, Speisekarte\n- 'show-wellness': Use when user asks about wellness, spa, massages, treatments, wellness program, Wellness-Programm\n\nFor karl agent:\n- 'view-calendar', 'create-calendar-entry', 'edit-calendar-entry', 'delete-calendar-entry'`
 		}
 	};
 	

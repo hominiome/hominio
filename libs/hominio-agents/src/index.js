@@ -12,6 +12,9 @@ export { loadDataContext } from './data-context-loader.js';
 // Export menu context generator for LLM context injection
 export { getMenuContextString } from '../lib/functions/show-menu.js';
 
+// Export wellness context generator for LLM context injection
+export { getWellnessContextString } from '../lib/functions/show-wellness.js';
+
 // Export calendar context generator for LLM context injection
 export { getCalendarContextString } from '../lib/functions/calendar-store.js';
 

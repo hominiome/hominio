@@ -7,6 +7,7 @@
 // Import all functions statically - use relative path from this file
 // Vite will resolve these correctly when the package is imported
 import * as showMenuModule from '../lib/functions/show-menu.js';
+import * as showWellnessModule from '../lib/functions/show-wellness.js';
 import * as createCalendarEntryModule from '../lib/functions/create-calendar-entry.js';
 import * as editCalendarEntryModule from '../lib/functions/edit-calendar-entry.js';
 import * as deleteCalendarEntryModule from '../lib/functions/delete-calendar-entry.js';
@@ -14,6 +15,7 @@ import * as viewCalendarModule from '../lib/functions/view-calendar.js';
 
 const functionModules = {
 	'show-menu': showMenuModule,
+	'show-wellness': showWellnessModule,
 	'create-calendar-entry': createCalendarEntryModule,
 	'edit-calendar-entry': editCalendarEntryModule,
 	'delete-calendar-entry': deleteCalendarEntryModule,

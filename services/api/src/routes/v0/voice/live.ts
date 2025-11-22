@@ -171,6 +171,9 @@ export const voiceLiveHandler = {
                     systemInstruction = await buildSystemInstruction(agentConfig, { calendarContext });
 
                     console.log(`[voice/live] ✅ Loaded initial agent context: ${initialAgentId}`);
+                    console.log(`[voice/live] Agent config has ${agentConfig.skills?.length || 0} skills:`, agentConfig.skills?.map(s => s.id) || []);
+                    console.log(`[voice/live] System instruction length: ${systemInstruction.length} chars`);
+                    console.log(`[voice/live] System instruction preview (first 1000 chars): ${systemInstruction.substring(0, 1000)}`);
                 } catch (err) {
                     console.error(`[voice/live] Failed to load initial agent config:`, err);
                 }
@@ -206,7 +209,7 @@ export const voiceLiveHandler = {
                             },
                             {
                                 name: "actionSkill",
-                                description: "Execute a skill/action for the current agent. Use this to perform actions like showing menus, booking services, creating calendar entries, or accessing information. REQUIRED: You MUST use this tool to execute any action - verbal responses alone are not sufficient. Skill-specific parameters (like title, date, etc.) are passed as top-level arguments alongside agentId and skillId. For create-calendar-entry: MUST include title, date, time, duration. For edit/delete: MUST include id.",
+                                description: "Execute a skill/action for the current agent. REQUIRED: You MUST use this tool - verbal responses alone are not sufficient.\n\nFor Charles agent, you have TWO skills:\n1. show-menu: When user asks about menu, food, restaurant, Speisekarte → use skillId: \"show-menu\"\n2. show-wellness: When user asks about wellness, spa, massages, treatments, wellness program, Wellness-Programm → use skillId: \"show-wellness\"\n\nParameters are top-level (no args object). Optional category for show-menu (appetizers, mains, desserts, drinks) or show-wellness (massages, treatments, packages, facilities).",
                                 parameters: (() => {
                                     if (actionSkillArgsSchema && actionSkillArgsSchema.properties) {
                                         console.log(`[voice/live] ✅ Using generated schema for actionSkill`);
@@ -315,6 +318,8 @@ export const voiceLiveHandler = {
                                                     }
 
                                                     const systemInstructionText = await buildSystemInstruction(config, { calendarContext });
+                                                    console.log(`[voice/live] Agent config has ${config.skills?.length || 0} skills:`, config.skills?.map(s => s.id) || []);
+                                                    console.log(`[voice/live] System instruction preview (first 1000 chars): ${systemInstructionText.substring(0, 1000)}`);
                                                     const contextMessage = `[System] ${systemInstructionText}`;
 
                                                     session.sendClientContent({
@@ -365,6 +370,32 @@ export const voiceLiveHandler = {
                                                         }
                                                     }).catch(err => {
                                                         console.error(`[voice/live] Error loading menu context:`, err);
+                                                    });
+                                                }
+
+                                                if (skillId === "show-wellness") {
+                                                    loadAgentConfig(agentId).then(async config => {
+                                                        const skill = config.skills?.find((s: any) => s.id === 'show-wellness');
+                                                        let wellnessContextItem = null;
+                                                        if (skill?.dataContext) {
+                                                            const skillDataContext = Array.isArray(skill.dataContext) ? skill.dataContext : [skill.dataContext];
+                                                            wellnessContextItem = skillDataContext.find((item: any) => item.id === 'wellness');
+                                                        }
+                                                        if (!wellnessContextItem) {
+                                                            wellnessContextItem = config.dataContext?.find((item: any) => item.id === 'wellness');
+                                                        }
+
+                                                        if (wellnessContextItem && wellnessContextItem.data) {
+                                                            const { getWellnessContextString } = await import('@hominio/agents');
+                                                            const wellnessContext = getWellnessContextString(wellnessContextItem.data, wellnessContextItem);
+                                                            session.sendClientContent({
+                                                                turns: wellnessContext,
+                                                                turnComplete: true,
+                                                            });
+                                                            console.log(`[voice/live] ✅ Injected wellness context for show-wellness tool call (from skill dataContext)`);
+                                                        }
+                                                    }).catch(err => {
+                                                        console.error(`[voice/live] Error loading wellness context:`, err);
                                                     });
                                                 }
                                                 response = { success: true, message: `Executing skill ${skillId} for agent ${agentId}`, agentId, skillId };
@@ -563,6 +594,45 @@ export const voiceLiveHandler = {
                                                 }
                                             }).catch(err => {
                                                 console.error(`[voice/live] Error loading menu context:`, err);
+                                            });
+                                        }
+
+                                        // Wellness data comes from agent config's dataContext (single source of truth)
+                                        if (skillId === "show-wellness") {
+                                            // Use same pattern as show-menu - load config and send context
+                                            loadAgentConfig(agentId).then(async config => {
+                                                // Find show-wellness skill
+                                                const skill = config.skills?.find((s: any) => s.id === 'show-wellness');
+
+                                                // Get wellness data from skill-specific dataContext (preferred)
+                                                let wellnessContextItem = null;
+                                                if (skill?.dataContext) {
+                                                    const skillDataContext = Array.isArray(skill.dataContext) ? skill.dataContext : [skill.dataContext];
+                                                    wellnessContextItem = skillDataContext.find((item: any) => item.id === 'wellness');
+                                                }
+
+                                                // Fallback to agent-level dataContext (for backwards compatibility)
+                                                if (!wellnessContextItem) {
+                                                    wellnessContextItem = config.dataContext?.find((item: any) => item.id === 'wellness');
+                                                }
+
+                                                if (wellnessContextItem && wellnessContextItem.data) {
+                                                    // Import wellness context generator
+                                                    const { getWellnessContextString } = await import('@hominio/agents');
+                                                    // Pass both wellness data and full config (for instructions, categoryNames, currency, reminder)
+                                                    const wellnessContext = getWellnessContextString(wellnessContextItem.data, wellnessContextItem);
+
+                                                    // Send wellness context as text message to conversation using sendClientContent
+                                                    session.sendClientContent({
+                                                        turns: wellnessContext,
+                                                        turnComplete: true,
+                                                    });
+                                                    console.log(`[voice/live] ✅ Injected wellness context for show-wellness tool call (from skill dataContext)`);
+                                                } else {
+                                                    console.warn(`[voice/live] ⚠️ Wellness data not found in skill or agent config`);
+                                                }
+                                            }).catch(err => {
+                                                console.error(`[voice/live] Error loading wellness context:`, err);
                                             });
                                         }
 

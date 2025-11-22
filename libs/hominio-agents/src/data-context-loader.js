@@ -22,12 +22,12 @@ export async function loadDataContext(agentConfig) {
 	
 	// Format data context as a readable string for LLM prompt
 	// Each data context entry is added as background knowledge/instructions
-	// EXCEPT menu data (id: "menu") which is only injected during menu tool calls
+	// EXCEPT menu and wellness data which are only injected during their respective tool calls
 	const contextParts = [];
 	
 	for (const contextItem of agentConfig.dataContext) {
-		// Skip menu data - it's only injected during show-menu tool calls
-		if (contextItem.id === 'menu') {
+		// Skip menu and wellness data - they're only injected during their respective tool calls
+		if (contextItem.id === 'menu' || contextItem.id === 'wellness') {
 			continue;
 		}
 		
