@@ -1,3 +1,10 @@
+# [0.14.0](https://github.com/hominiome/hominio/compare/v0.13.1...v0.14.0) (2025-11-22)
+
+
+### Features
+
+* new agent calendar ([e8b2b5c](https://github.com/hominiome/hominio/commit/e8b2b5c2e8a7e871ff37da54d1824ccaf14c8da8))
+
 ## [0.13.1](https://github.com/hominiome/hominio/compare/v0.13.0...v0.13.1) (2025-11-22)
 
 
