@@ -140,8 +140,10 @@
     },
     "services/game": {
       "name": "game",
-      "version": "0.0.1",
+      "version": "0.14.0",
       "dependencies": {
+        "@hominio/auth": "workspace:*",
+        "@hominio/brand": "workspace:*",
         "@threlte/core": "^8.3.0",
         "@threlte/extras": "^9.7.0",
         "three": "^0.181.2",
