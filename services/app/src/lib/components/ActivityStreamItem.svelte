@@ -8,7 +8,7 @@
 
 	// Derived state
 	const isSkill = $derived(item.toolName === 'actionSkill');
-	const isQuery = $derived(item.toolName === 'queryVibeContext');
+	const isQuery = $derived(item.toolName === 'queryVibeContext' || item.toolName === 'queryDataContext');
     
     // Extract skill info
     // args structure might vary slightly based on how it was passed, handling both flat and nested
@@ -122,7 +122,11 @@
         <div class="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/40 border border-white/50 backdrop-blur-md shadow-sm mx-auto">
             <div class="flex items-center gap-2">
                 <div class="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]"></div>
-                <span class="text-[11px] font-medium text-slate-600">Context: <span class="text-slate-800 font-bold capitalize">{vibeId}</span></span>
+                {#if item.toolName === 'queryVibeContext'}
+                    <span class="text-[11px] font-medium text-slate-600">Context: <span class="text-slate-800 font-bold capitalize">{vibeId}</span></span>
+                {:else if item.toolName === 'queryDataContext'}
+                    <span class="text-[11px] font-medium text-slate-600">Data: <span class="text-slate-800 font-bold capitalize">{args.schemaId || 'unknown'}</span></span>
+                {/if}
             </div>
             <div class="w-px h-3 bg-slate-300/50"></div>
             <div class="text-[10px] text-slate-400 tabular-nums font-medium">

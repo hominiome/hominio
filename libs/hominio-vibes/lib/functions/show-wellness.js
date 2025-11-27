@@ -21,88 +21,35 @@
 export async function handler(args, context) {
 	const { category } = args || {};
 	
-	console.log('[show-wellness] Handler called with args:', args);
-	console.log('[show-wellness] Context:', {
-		hasSkillDataContext: !!context.skillDataContext,
-		skillDataContextType: Array.isArray(context.skillDataContext) ? 'array' : typeof context.skillDataContext,
-		skillDataContextLength: Array.isArray(context.skillDataContext) ? context.skillDataContext.length : 'N/A',
-		hasRawDataContext: !!context.rawDataContext,
-		rawDataContextType: Array.isArray(context.rawDataContext) ? 'array' : typeof context.rawDataContext,
-		rawDataContextLength: Array.isArray(context.rawDataContext) ? context.rawDataContext.length : 'N/A'
-	});
-	
-	// Extract wellness data from skill-specific dataContext
-	// Wellness should be in skill.dataContext with id: "wellness"
-	/** @type {any} */
-	let wellness = null;
-	/** @type {any} */
-	let wellnessConfig = null;
-	
-	// First try skill-specific dataContext (preferred)
-	if (context.skillDataContext) {
-		// Handle both array and single object cases
-		const skillDataContextArray = Array.isArray(context.skillDataContext) 
-			? context.skillDataContext 
-			: [context.skillDataContext];
+	// Get wellness data from store (single source of truth)
+	try {
+		const { getWellnessData } = await import('./wellness-store.js');
+		const wellness = await getWellnessData();
 		
-		console.log('[show-wellness] Searching skillDataContext:', skillDataContextArray.map((item) => item?.id));
-		
-		/** @type {any} */
-		const wellnessContext = skillDataContextArray.find((item) => item && item.id === 'wellness');
-		if (wellnessContext) {
-			console.log('[show-wellness] Found wellness context in skillDataContext');
-			wellnessConfig = wellnessContext; // Store full config for instructions
-			if (wellnessContext.data) {
-				wellness = wellnessContext.data;
-				console.log('[show-wellness] Wellness data loaded:', Object.keys(wellness || {}));
-			} else {
-				console.warn('[show-wellness] Wellness context found but no data property');
-			}
+		if (!wellness) {
+			return {
+				success: false,
+				error: 'Wellness data not available'
+			};
 		}
-	}
-	
-	// Fallback to rawDataContext (for backwards compatibility)
-	if (!wellness && context.rawDataContext) {
-		// Handle both array and single object cases
-		const rawDataContextArray = Array.isArray(context.rawDataContext)
-			? context.rawDataContext
-			: [context.rawDataContext];
 		
-		console.log('[show-wellness] Searching rawDataContext:', rawDataContextArray.map((item) => item?.id));
+		// Filter by category if specified
+		const result = category ? { [category]: wellness[category] || [] } : wellness;
 		
-		/** @type {any} */
-		const wellnessContext = rawDataContextArray.find((item) => item && item.id === 'wellness');
-		if (wellnessContext) {
-			console.log('[show-wellness] Found wellness context in rawDataContext');
-			wellnessConfig = wellnessContext;
-			if (wellnessContext.data) {
-				wellness = wellnessContext.data;
-				console.log('[show-wellness] Wellness data loaded from rawDataContext:', Object.keys(wellness || {}));
+		return {
+			success: true,
+			data: {
+				wellness: result,
+				category: category || 'all',
+				timestamp: new Date().toISOString()
 			}
-		}
-	}
-	
-	// Fallback: if wellness not found in context, return error with configurable message
-	if (!wellness) {
-		const errorMsg = (wellnessConfig && wellnessConfig.errorMessage) || 'Wellness data not found in agent configuration';
-		console.error('[show-wellness] Wellness data not found. skillDataContext:', context.skillDataContext, 'rawDataContext:', context.rawDataContext);
+		};
+	} catch (error) {
 		return {
 			success: false,
-			error: errorMsg
+			error: `Failed to load wellness data: ${error instanceof Error ? error.message : 'Unknown error'}`
 		};
 	}
-	
-	// Filter by category if specified
-	const result = category ? { [category]: wellness[category] || [] } : wellness;
-	
-	return {
-		success: true,
-		data: {
-			wellness: result,
-			category: category || 'all',
-			timestamp: new Date().toISOString()
-		}
-	};
 }
 
 /**

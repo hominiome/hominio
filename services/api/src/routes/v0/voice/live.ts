@@ -118,7 +118,7 @@ export const voiceLiveHandler = {
             const vibeConfigs: Record<string, any> = {};
 
             // Load all vibe configs and build comprehensive tool schema
-            const { buildSystemInstruction, buildActionSkillArgsSchema, listVibes } = await import('@hominio/vibes');
+            const { buildSystemInstruction, buildActionSkillArgsSchema, buildQueryDataContextSchema, listVibes } = await import('@hominio/vibes');
             const allSkills = [];
             const skillToVibeMap: Record<string, string> = {};
             let actionSkillArgsSchema: any = null;
@@ -205,6 +205,35 @@ export const voiceLiveHandler = {
                                 }
                             },
                             {
+                                name: "queryDataContext",
+                                description: "Query dynamic data contexts (e.g., menu, wellness, calendar). Use this to load current data before executing actionSkill. This is a background query that doesn't trigger UI - it just loads context for you to understand available data.",
+                                parameters: (() => {
+                                    try {
+                                        const queryDataContextSchema = buildQueryDataContextSchema(vibeConfigs);
+                                        console.log(`[voice/live] ✅ Built queryDataContext schema`);
+                                        return queryDataContextSchema;
+                                    } catch (err) {
+                                        console.warn(`[voice/live] ⚠️ Failed to build queryDataContext schema:`, err);
+                                        return {
+                                            type: "object",
+                                            properties: {
+                                                schemaId: {
+                                                    type: "string",
+                                                    description: "The data context schema ID (e.g., 'menu', 'wellness', 'calendar')",
+                                                    enum: ["menu", "wellness", "calendar"]
+                                                },
+                                                params: {
+                                                    type: "object",
+                                                    description: "Optional query parameters (schema-specific)",
+                                                    additionalProperties: true
+                                                }
+                                            },
+                                            required: ["schemaId"]
+                                        };
+                                    }
+                                })()
+                            },
+                            {
                                 name: "actionSkill",
                                 description: "Execute a skill/action for a vibe. REQUIRED: You MUST use this tool - verbal responses alone are not sufficient.\n\nFor charles vibe:\n1. show-menu: When user asks about menu, food, restaurant, Speisekarte → use skillId: \"show-menu\"\n2. show-wellness: When user asks about wellness, spa, massages, treatments, wellness program, Wellness-Programm → use skillId: \"show-wellness\"\n\nFor karl vibe:\n- view-calendar, create-calendar-entry, edit-calendar-entry, delete-calendar-entry\n\nParameters are top-level (no args object).",
                                 parameters: (() => {
@@ -218,14 +247,7 @@ export const voiceLiveHandler = {
                                         properties: {
                                             vibeId: { type: "string", enum: ["charles", "karl"], description: "Vibe ID" },
                                             skillId: { type: "string", description: "Skill ID" },
-                                            // Fallback properties
-                                            title: { type: "string", description: "Calendar entry title" },
-                                            date: { type: "string", description: "Date (YYYY-MM-DD)" },
-                                            time: { type: "string", description: "Time (HH:MM)" },
-                                            duration: { type: "number", description: "Duration in minutes" },
-                                            description: { type: "string", description: "Description" },
-                                            category: { type: "string", enum: ["appetizers", "mains", "desserts", "drinks"] },
-                                            id: { type: "string", description: "Entry ID" }
+
                                         },
                                         required: ["vibeId", "skillId"]
                                     };
@@ -280,7 +302,7 @@ export const voiceLiveHandler = {
 
                                 // CRITICAL: Process ALL parts in order - audio FIRST, then everything else
                                 // This ensures audio is NEVER dropped, even when mixed with function calls or text
-                                
+
                                 // Step 1: Send ALL audio parts immediately (highest priority)
                                 for (const part of parts) {
                                     if (part.inlineData?.data) {
@@ -312,7 +334,7 @@ export const voiceLiveHandler = {
                                 // Step 4: Handle Function Calls (after audio is already sent)
                                 for (const part of parts) {
                                     if (!part.functionCall) continue;
-                                    
+
                                     const functionCall = part.functionCall;
                                     console.log("[voice/live] Handling function call:", JSON.stringify(functionCall));
 
@@ -326,6 +348,36 @@ export const voiceLiveHandler = {
                                     let response: any = { error: "Unknown tool" };
                                     if (functionCall.name === "get_name") {
                                         response = { name: "hominio" };
+                                    } else if (functionCall.name === "queryDataContext") {
+                                        // Handle queryDataContext tool call: load data context from stores
+                                        const { schemaId, params = {} } = functionCall.args || {};
+                                        console.log(`[voice/live] 🔄 Querying data context: schema="${schemaId}"`);
+
+                                        try {
+                                            const { handleQueryDataContext } = await import('@hominio/vibes');
+                                            const result = await handleQueryDataContext({
+                                                schemaId,
+                                                params,
+                                                injectFn: (content) => session.sendClientContent(content)
+                                            });
+
+                                            if (result.success) {
+                                                console.log(`[voice/live] ✅ Loaded data context: ${schemaId}`);
+                                                response = {
+                                                    success: true,
+                                                    message: result.message || `Loaded ${schemaId} data context`,
+                                                    schemaId: schemaId
+                                                };
+                                            } else {
+                                                response = {
+                                                    success: false,
+                                                    error: result.error || `Failed to load ${schemaId} data context`
+                                                };
+                                            }
+                                        } catch (err) {
+                                            console.error(`[voice/live] Failed to query data context:`, err);
+                                            response = { success: false, error: `Failed to query data context: ${err instanceof Error ? err.message : 'Unknown error'}` };
+                                        }
                                     } else if (functionCall.name === "queryVibeContext") {
                                         // Handle vibe context query: load context and inject into conversation
                                         const vibeId = functionCall.args?.vibeId || 'unknown';
@@ -372,58 +424,18 @@ export const voiceLiveHandler = {
                                         const effectiveVibeId = vibeId || (functionCall.args as any)?.agentId;
                                         console.log(`[voice/live] ✅ Handling actionSkill tool call: vibe="${effectiveVibeId}", skill="${skillId}", args:`, args);
 
-                                        // Provide dynamic context knowledge when menu tool is called
-                                        if (skillId === "show-menu") {
-                                            loadVibeConfig(effectiveVibeId).then(async (config: any) => {
-                                                const skill = config.skills?.find((s: any) => s.id === 'show-menu');
-                                                let menuContextItem = null;
-                                                if (skill?.dataContext) {
-                                                    const skillDataContext = Array.isArray(skill.dataContext) ? skill.dataContext : [skill.dataContext];
-                                                    menuContextItem = skillDataContext.find((item: any) => item.id === 'menu');
-                                                }
-                                                if (!menuContextItem) {
-                                                    menuContextItem = config.dataContext?.find((item: any) => item.id === 'menu');
-                                                }
-
-                                                if (menuContextItem && menuContextItem.data) {
-                                                    const { getMenuContextString } = await import('@hominio/vibes');
-                                                    const menuContext = getMenuContextString(menuContextItem.data, menuContextItem);
-                                                    session.sendClientContent({
-                                                        turns: menuContext,
-                                                        turnComplete: true,
-                                                    });
-                                                    console.log(`[voice/live] ✅ Injected menu context for show-menu tool call (from skill dataContext)`);
-                                                }
-                                            }).catch((err: any) => {
-                                                console.error(`[voice/live] Error loading menu context:`, err);
+                                        // Use unified context injection manager
+                                        try {
+                                            const { injectContextForSkill } = await import('@hominio/vibes');
+                                            await injectContextForSkill({
+                                                skillId: skillId,
+                                                injectFn: (content) => session.sendClientContent(content)
                                             });
+                                        } catch (err) {
+                                            console.error(`[voice/live] Error injecting context for skill ${skillId}:`, err);
+                                            // Continue even if context injection fails
                                         }
 
-                                        if (skillId === "show-wellness") {
-                                            loadVibeConfig(effectiveVibeId).then(async (config: any) => {
-                                                const skill = config.skills?.find((s: any) => s.id === 'show-wellness');
-                                                let wellnessContextItem = null;
-                                                if (skill?.dataContext) {
-                                                    const skillDataContext = Array.isArray(skill.dataContext) ? skill.dataContext : [skill.dataContext];
-                                                    wellnessContextItem = skillDataContext.find((item: any) => item.id === 'wellness');
-                                                }
-                                                if (!wellnessContextItem) {
-                                                    wellnessContextItem = config.dataContext?.find((item: any) => item.id === 'wellness');
-                                                }
-
-                                                if (wellnessContextItem && wellnessContextItem.data) {
-                                                    const { getWellnessContextString } = await import('@hominio/vibes');
-                                                    const wellnessContext = getWellnessContextString(wellnessContextItem.data, wellnessContextItem);
-                                                    session.sendClientContent({
-                                                        turns: wellnessContext,
-                                                        turnComplete: true,
-                                                    });
-                                                    console.log(`[voice/live] ✅ Injected wellness context for show-wellness tool call (from skill dataContext)`);
-                                                }
-                                            }).catch((err: any) => {
-                                                console.error(`[voice/live] Error loading wellness context:`, err);
-                                            });
-                                        }
                                         response = { success: true, message: `Executing skill ${skillId} for vibe ${effectiveVibeId}`, vibeId: effectiveVibeId, skillId };
                                     }
 
@@ -504,6 +516,54 @@ export const voiceLiveHandler = {
                                         };
                                     }
 
+                                    if (toolName === "queryDataContext") {
+                                        // Handle queryDataContext tool call: load data context from stores
+                                        const { schemaId, params = {} } = fc.args || {};
+                                        console.log(`[voice/live] 🔄 Querying data context: schema="${schemaId}"`);
+
+                                        try {
+                                            const { handleQueryDataContext } = await import('@hominio/vibes');
+                                            const result = await handleQueryDataContext({
+                                                schemaId,
+                                                params,
+                                                injectFn: (content) => session.sendClientContent(content)
+                                            });
+
+                                            if (result.success) {
+                                                console.log(`[voice/live] ✅ Loaded data context: ${schemaId}`);
+                                                return {
+                                                    name: "queryDataContext",
+                                                    response: {
+                                                        result: {
+                                                            success: true,
+                                                            message: result.message || `Loaded ${schemaId} data context`,
+                                                            schemaId: schemaId
+                                                        }
+                                                    },
+                                                    id: fc.id
+                                                };
+                                            } else {
+                                                return {
+                                                    name: "queryDataContext",
+                                                    response: {
+                                                        result: {
+                                                            success: false,
+                                                            error: result.error || `Failed to load ${schemaId} data context`
+                                                        }
+                                                    },
+                                                    id: fc.id
+                                                };
+                                            }
+                                        } catch (err) {
+                                            console.error(`[voice/live] Failed to query data context:`, err);
+                                            return {
+                                                name: "queryDataContext",
+                                                response: { result: { success: false, error: `Failed to query data context: ${err instanceof Error ? err.message : 'Unknown error'}` } },
+                                                id: fc.id
+                                            };
+                                        }
+                                    }
+
                                     if (toolName === "queryVibeContext") {
                                         // Handle vibe context query: load context and inject into conversation
                                         const vibeId = fc.args?.vibeId || 'unknown';
@@ -576,84 +636,16 @@ export const voiceLiveHandler = {
                                         console.log(`[voice/live] 🔧 Processing tool call: "${toolName}"`, JSON.stringify(fc));
                                         console.log(`[voice/live] ✅ Handling actionSkill tool call: vibe="${effectiveVibeId}", skill="${skillId}", args:`, args);
 
-                                        // Provide dynamic context knowledge when menu tool is called
-                                        // Send as text message to conversation
-                                        // Menu data comes from vibe config's dataContext (single source of truth)
-                                        if (skillId === "show-menu") {
-                                            // Use same pattern as queryVibeContext - load config and send context
-                                            loadVibeConfig(effectiveVibeId).then(async (config: any) => {
-                                                // Find show-menu skill
-                                                const skill = config.skills?.find((s: any) => s.id === 'show-menu');
-
-                                                // Get menu data from skill-specific dataContext (preferred)
-                                                let menuContextItem = null;
-                                                if (skill?.dataContext) {
-                                                    const skillDataContext = Array.isArray(skill.dataContext) ? skill.dataContext : [skill.dataContext];
-                                                    menuContextItem = skillDataContext.find((item: any) => item.id === 'menu');
-                                                }
-
-                                                // Fallback to vibe-level dataContext (for backwards compatibility)
-                                                if (!menuContextItem) {
-                                                    menuContextItem = config.dataContext?.find((item: any) => item.id === 'menu');
-                                                }
-
-                                                if (menuContextItem && menuContextItem.data) {
-                                                    // Import menu context generator
-                                                    const { getMenuContextString } = await import('@hominio/vibes');
-                                                    // Pass both menu data and full config (for instructions, categoryNames, currency, reminder)
-                                                    const menuContext = getMenuContextString(menuContextItem.data, menuContextItem);
-
-                                                    // Send menu context as text message to conversation using sendClientContent
-                                                    session.sendClientContent({
-                                                        turns: menuContext,
-                                                        turnComplete: true,
-                                                    });
-                                                    console.log(`[voice/live] ✅ Injected menu context for show-menu tool call (from skill dataContext)`);
-                                                } else {
-                                                    console.warn(`[voice/live] ⚠️ Menu data not found in skill or vibe config`);
-                                                }
-                                            }).catch((err: any) => {
-                                                console.error(`[voice/live] Error loading menu context:`, err);
+                                        // Use unified context injection manager
+                                        try {
+                                            const { injectContextForSkill } = await import('@hominio/vibes');
+                                            await injectContextForSkill({
+                                                skillId: skillId,
+                                                injectFn: (content) => session.sendClientContent(content)
                                             });
-                                        }
-
-                                        // Wellness data comes from vibe config's dataContext (single source of truth)
-                                        if (skillId === "show-wellness") {
-                                            // Use same pattern as show-menu - load config and send context
-                                            loadVibeConfig(effectiveVibeId).then(async (config: any) => {
-                                                // Find show-wellness skill
-                                                const skill = config.skills?.find((s: any) => s.id === 'show-wellness');
-
-                                                // Get wellness data from skill-specific dataContext (preferred)
-                                                let wellnessContextItem = null;
-                                                if (skill?.dataContext) {
-                                                    const skillDataContext = Array.isArray(skill.dataContext) ? skill.dataContext : [skill.dataContext];
-                                                    wellnessContextItem = skillDataContext.find((item: any) => item.id === 'wellness');
-                                                }
-
-                                                // Fallback to vibe-level dataContext (for backwards compatibility)
-                                                if (!wellnessContextItem) {
-                                                    wellnessContextItem = config.dataContext?.find((item: any) => item.id === 'wellness');
-                                                }
-
-                                                if (wellnessContextItem && wellnessContextItem.data) {
-                                                    // Import wellness context generator
-                                                    const { getWellnessContextString } = await import('@hominio/vibes');
-                                                    // Pass both wellness data and full config (for instructions, categoryNames, currency, reminder)
-                                                    const wellnessContext = getWellnessContextString(wellnessContextItem.data, wellnessContextItem);
-
-                                                    // Send wellness context as text message to conversation using sendClientContent
-                                                    session.sendClientContent({
-                                                        turns: wellnessContext,
-                                                        turnComplete: true,
-                                                    });
-                                                    console.log(`[voice/live] ✅ Injected wellness context for show-wellness tool call (from skill dataContext)`);
-                                                } else {
-                                                    console.warn(`[voice/live] ⚠️ Wellness data not found in skill or vibe config`);
-                                                }
-                                            }).catch((err: any) => {
-                                                console.error(`[voice/live] Error loading wellness context:`, err);
-                                            });
+                                        } catch (err) {
+                                            console.error(`[voice/live] Error injecting context for skill ${skillId}:`, err);
+                                            // Continue even if context injection fails
                                         }
 
                                         return {

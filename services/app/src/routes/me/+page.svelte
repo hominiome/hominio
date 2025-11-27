@@ -155,11 +155,12 @@
 		if (toolName === 'actionSkill') {
 			await processActionSkill(newItem);
 		} else if (toolName === 'queryVibeContext') {
-			// Just a log, mark as success immediately
+			// Background query - just log, mark as success immediately
 			updateActivityStatus(id, 'success');
-            // Auto-collapse context queries after a short delay so they don't take up space?
-            // The user said "keep the 2nd last view as 'history collapsed'". 
-            // Query items are small anyway.
+		} else if (toolName === 'queryDataContext') {
+			// Background query - just log, mark as success immediately
+			// Shows mini info message that AI queried data context
+			updateActivityStatus(id, 'success');
 		}
 	}
 

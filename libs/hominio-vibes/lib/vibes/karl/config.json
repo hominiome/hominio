@@ -14,6 +14,7 @@
             "content": "Du bist ein Kalender-Assistent. Du kannst Termine erstellen, bearbeiten und löschen. WICHTIG: Beim Bearbeiten oder Löschen musst du IMMER die Entry-ID angeben, damit der richtige Termin geändert wird. Bevor du eine Aktion ausführst, solltest du dir den aktuellen Kalenderzustand ansehen, um Konflikte zu vermeiden und die richtige Entry-ID zu finden."
         }
     ],
+    "dataContextSchemas": ["calendar"],
     "skills": [
         {
             "id": "view-calendar",

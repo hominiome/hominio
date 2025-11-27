@@ -25,7 +25,27 @@ export { getCalendarContextString, calendarEntries } from '../lib/functions/cale
 export { buildSystemInstruction } from './system-instruction-builder.js';
 
 // Export tool schema builder
-export { buildActionSkillArgsSchema } from './tool-schema-builder.js';
+export { buildActionSkillArgsSchema, buildQueryDataContextSchema } from './tool-schema-builder.js';
+
+// Export data context schema registry
+export { 
+	getSchemaHandler, 
+	hasSchema, 
+	getRegisteredSchemaIds, 
+	getSchemaParamsSchema,
+	registerSchema,
+	getAllSchemasMetadata
+} from './data-context-schema-registry.js';
+
+// Export query data context handler
+export { handleQueryDataContext } from './query-data-context-handler.js';
+
+// Export context injection manager
+export { 
+	injectContextForSkill, 
+	hasContextFormatter,
+	registerContextFormatter
+} from './context-injection-manager.js';
 
 // Export UI components
 export { default as MenuView } from './components/MenuView.svelte';

@@ -39,7 +39,24 @@ Wenn ein Benutzer eine Aufgabe erwähnt, die einen bestimmten Vibe erfordert, ru
 
 Verfügbare Tools:
 - queryVibeContext: Lade Kontext und Tools von einem Vibe
+- queryDataContext: Lade dynamische Datenkontexte (z.B. Menü, Wellness, Kalender) - nutze dies, um aktuelle Daten abzurufen, bevor du actionSkill aufrufst
 `;
+
+	// Add available data context schemas from active vibes
+	const availableSchemas = new Set();
+	for (const vibeId of activeVibeIds) {
+		const vibeConfig = vibeConfigs[vibeId];
+		if (vibeConfig?.dataContextSchemas) {
+			for (const schemaId of vibeConfig.dataContextSchemas) {
+				availableSchemas.add(schemaId);
+			}
+		}
+	}
+	
+	if (availableSchemas.size > 0) {
+		instruction += `\nVerfügbare Datenkontexte für aktive Vibes: ${Array.from(availableSchemas).join(', ')}\n`;
+		instruction += `Nutze queryDataContext mit schemaId, um diese Daten abzurufen (z.B. queryDataContext({ schemaId: "menu" })).\n`;
+	}
 
 	// Add active vibe contexts if any
 	if (activeVibeIds.length > 0) {

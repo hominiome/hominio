@@ -3,6 +3,8 @@
  * Converts vibe skill parameters to proper JSON schema for tool definitions
  */
 
+import { getAllSchemasMetadata, getRegisteredSchemaIds } from './data-context-schema-registry.js';
+
 /**
  * Convert vibe skill parameter definition to JSON schema property
  * @param {Object} paramDef - Parameter definition from vibe config
@@ -107,6 +109,76 @@ export function buildActionSkillArgsSchema(skills, skillToVibeMap = {}) {
 		type: 'object',
 		properties,
 		required: ["vibeId", "skillId"], // Only base fields are strictly required at JSON schema level, others depend on context
+		additionalProperties: false
+	};
+}
+
+/**
+ * Build JSON schema for queryDataContext tool
+ * Dynamically builds schema based on available data context schemas
+ * @param {Object<string, import('./types.ts').VibeConfig>} vibeConfigs - Map of vibeId to vibe config
+ * @returns {Object} JSON schema for queryDataContext parameters
+ */
+export function buildQueryDataContextSchema(vibeConfigs = {}) {
+	// Collect all available schemas from vibe configs
+	const availableSchemas = new Set();
+	for (const vibeConfig of Object.values(vibeConfigs)) {
+		if (vibeConfig.dataContextSchemas) {
+			for (const schemaId of vibeConfig.dataContextSchemas) {
+				availableSchemas.add(schemaId);
+			}
+		}
+	}
+	
+	// Fallback to registered schemas if no vibe configs provided
+	if (availableSchemas.size === 0) {
+		const registeredSchemas = getRegisteredSchemaIds();
+		for (const schemaId of registeredSchemas) {
+			availableSchemas.add(schemaId);
+		}
+	}
+	
+	const schemaArray = Array.from(availableSchemas);
+	const schemasMetadata = getAllSchemasMetadata();
+	
+	// Build properties object with all possible params from all schemas
+	const properties = {
+		schemaId: {
+			type: "string",
+			description: `The data context schema ID to query. Available schemas: ${schemaArray.map(s => `'${s}'`).join(', ')}`,
+			enum: schemaArray
+		},
+		params: {
+			type: "object",
+			description: "Optional query parameters (schema-specific). Leave empty {} if no params needed.",
+			properties: {},
+			additionalProperties: true
+		}
+	};
+	
+	// Add schema-specific param descriptions
+	let paramsDescription = "Schema-specific parameters:\n";
+	for (const schemaId of schemaArray) {
+		const metadata = schemasMetadata[schemaId];
+		if (metadata && metadata.paramsSchema) {
+			paramsDescription += `\n**For schemaId='${schemaId}':**\n`;
+			if (metadata.paramsSchema.properties) {
+				for (const [paramName, paramDef] of Object.entries(metadata.paramsSchema.properties)) {
+					const required = metadata.paramsSchema.required?.includes(paramName) ? 'REQUIRED' : 'OPTIONAL';
+					paramsDescription += `  - ${paramName} (${required}): ${paramDef.description || ''}\n`;
+				}
+			} else {
+				paramsDescription += `  (No parameters)\n`;
+			}
+		}
+	}
+	
+	properties.params.description += paramsDescription;
+	
+	return {
+		type: 'object',
+		properties,
+		required: ["schemaId"],
 		additionalProperties: false
 	};
 }

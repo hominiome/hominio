@@ -9,8 +9,8 @@
  * Returns JSON data context directly from vibe config (no queries executed)
  * This context is passed as prompt/instructions/background knowledge to the LLM
  * 
- * IMPORTANT: Menu data (id: "menu") is EXCLUDED from general context.
- * Menu context is only injected when the show-menu tool is called.
+ * NOTE: Dynamic data contexts (menu, wellness, calendar) are now handled via queryDataContext tool
+ * and stored in Svelte stores. This function only loads static background knowledge.
  * 
  * @param {import('./types.ts').VibeConfig} vibeConfig - Vibe configuration
  * @returns {Promise<string>} - Formatted data context string to pass to LLM
@@ -22,15 +22,10 @@ export async function loadDataContext(vibeConfig) {
 	
 	// Format data context as a readable string for LLM prompt
 	// Each data context entry is added as background knowledge/instructions
-	// EXCEPT menu and wellness data which are only injected during their respective tool calls
+	// Dynamic data (menu, wellness, calendar) is handled via queryDataContext tool, not here
 	const contextParts = [];
 	
 	for (const contextItem of vibeConfig.dataContext) {
-		// Skip menu and wellness data - they're only injected during their respective tool calls
-		if (contextItem.id === 'menu' || contextItem.id === 'wellness') {
-			continue;
-		}
-		
 		if (typeof contextItem === 'string') {
 			// Simple string instruction
 			contextParts.push(contextItem);

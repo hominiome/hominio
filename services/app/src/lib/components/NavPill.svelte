@@ -60,9 +60,13 @@
 			window.dispatchEvent(toolCallEvent);
 
 			if (toolName === 'queryVibeContext') {
-				// Vibe context queries don't require UI navigation
+				// Background query - vibe context queries don't require UI navigation
 				// The context is injected into the conversation automatically
 				console.log('[NavPill] Vibe context queried:', args.vibeId);
+			} else if (toolName === 'queryDataContext') {
+				// Background query - data context queries don't require UI navigation
+				// The context is injected into the conversation automatically
+				console.log('[NavPill] Data context queried:', args.schemaId);
 			} else if (toolName === 'actionSkill') {
 				// Handle actionSkill tool calls
 				// Dispatch custom event for Charles/Karl page to handle

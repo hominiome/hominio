@@ -8,70 +8,46 @@
 
 /**
  * Function handler - executes the skill logic
+ * Gets menu data from Svelte store (single source of truth)
  * @param {Object} args - Function arguments
  * @param {string} [args.category] - Optional category filter
  * @param {Object} context - Function context
- * @param {string} context.dataContext - Data context string from agent config (formatted)
- * @param {Object[]} [context.rawDataContext] - Raw data context from agent config (for extracting menu data)
- * @param {Object[]} [context.skillDataContext] - Skill-specific data context (e.g., menu data for show-menu skill)
  * @param {string} [context.userId] - Current user ID
- * @param {string} context.agentId - Agent ID
+ * @param {string} context.vibeId - Vibe ID
  * @returns {Promise<Object>}
  */
 export async function handler(args, context) {
 	const { category } = args || {};
 	
-	// Extract menu data from skill-specific dataContext
-	// Menu should be in skill.dataContext with id: "menu"
-	/** @type {any} */
-	let menu = null;
-	/** @type {any} */
-	let menuConfig = null;
-	
-	// First try skill-specific dataContext (preferred)
-	if (context.skillDataContext && Array.isArray(context.skillDataContext)) {
-		/** @type {any} */
-		const menuContext = context.skillDataContext.find((/** @type {any} */ item) => item && item.id === 'menu');
-		if (menuContext) {
-			menuConfig = menuContext; // Store full config for instructions
-			if (menuContext.data) {
-				menu = menuContext.data;
-			}
+	// Get menu data from store (single source of truth)
+	try {
+		const { getMenuData } = await import('./menu-store.js');
+		const menu = await getMenuData();
+		
+		if (!menu) {
+			return {
+				success: false,
+				error: 'Menu data not available'
+			};
 		}
-	}
-	
-	// Fallback to rawDataContext (for backwards compatibility)
-	if (!menu && context.rawDataContext && Array.isArray(context.rawDataContext)) {
-		/** @type {any} */
-		const menuContext = context.rawDataContext.find((/** @type {any} */ item) => item && item.id === 'menu');
-		if (menuContext) {
-			menuConfig = menuContext;
-			if (menuContext.data) {
-				menu = menuContext.data;
+		
+		// Filter by category if specified
+		const result = category ? { [category]: menu[category] || [] } : menu;
+		
+		return {
+			success: true,
+			data: {
+				menu: result,
+				category: category || 'all',
+				timestamp: new Date().toISOString()
 			}
-		}
-	}
-	
-	// Fallback: if menu not found in context, return error with configurable message
-	if (!menu) {
-		const errorMsg = (menuConfig && menuConfig.errorMessage) || 'Menu data not found in agent configuration';
+		};
+	} catch (error) {
 		return {
 			success: false,
-			error: errorMsg
+			error: `Failed to load menu data: ${error instanceof Error ? error.message : 'Unknown error'}`
 		};
 	}
-	
-	// Filter by category if specified
-	const result = category ? { [category]: menu[category] || [] } : menu;
-	
-	return {
-		success: true,
-		data: {
-			menu: result,
-			category: category || 'all',
-			timestamp: new Date().toISOString()
-		}
-	};
 }
 
 /**
