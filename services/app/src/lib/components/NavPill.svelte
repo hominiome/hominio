@@ -182,6 +182,7 @@
 	let hasVoiceCapability = $state(false);
 	let showCapabilityModal = $state(false);
 	let showSuccessModal = $state(false);
+	let capabilityExpired = $state(false); // Track if capability expired vs missing
 
 	async function checkVoiceCapability() {
 		if (!isAuthenticated) {
@@ -242,6 +243,7 @@
 		const hasAccess = await checkVoiceCapability();
 		
 		if (!hasAccess) {
+			capabilityExpired = false; // Not expired, just missing
 			showCapabilityModal = true;
 			return;
 		}
@@ -255,6 +257,9 @@
 			console.error('[NavPill] Cannot request access: not authenticated');
 			return;
 		}
+
+		// Reset expired flag when requesting new access
+		capabilityExpired = false;
 
 		try {
 			// Get wallet domain for API call
@@ -344,6 +349,45 @@
 			window.removeEventListener('updateVoiceContext', handleContextUpdate);
 		};
 	});
+
+	// Track previous call state to detect expiration during active call
+	let wasCallActive = $state(false);
+	
+	$effect(() => {
+		// Track if call was active
+		if (voiceCall.isCallActive || voiceCall.status === 'connected') {
+			wasCallActive = true;
+		}
+	});
+
+	// Watch for capability expiration errors from voice call service
+	$effect(() => {
+		const currentError = voiceCall.error;
+		if (currentError) {
+			// Check if error is related to capability expiration
+			const isCapabilityError = 
+				currentError.includes('capability') ||
+				currentError.includes('Access denied') ||
+				currentError.includes('permission') ||
+				currentError.includes('Forbidden');
+			
+			if (isCapabilityError) {
+				console.log('[NavPill] Capability error detected:', currentError);
+				// Mark as expired if call was active before (meaning it expired during use)
+				// If wasCallActive is true, it means the call was interrupted by expiration
+				capabilityExpired = wasCallActive;
+				// Show capability modal to allow re-requesting access
+				showCapabilityModal = true;
+				// Reset the flag after showing modal
+				wasCallActive = false;
+			}
+		} else {
+			// Reset expired flag when error clears
+			if (!showCapabilityModal) {
+				capabilityExpired = false;
+			}
+		}
+	});
 </script>
 
 <NavPill 
@@ -362,7 +406,12 @@
 	showCapabilityModal={showCapabilityModal}
 	showSuccessModal={showSuccessModal}
 	onRequestAccess={handleRequestAccess}
-	onCloseCapabilityModal={() => showCapabilityModal = false}
+	onCloseCapabilityModal={() => {
+		showCapabilityModal = false;
+		capabilityExpired = false;
+	}}
 	onCloseSuccessModal={() => showSuccessModal = false}
 	agentAvatar={agentAvatar}
+	capabilityModalTitle={capabilityExpired ? 'Voice access expired' : 'Access required'}
+	capabilityModalMessage={capabilityExpired ? 'Your voice access has expired. Please request access again to continue using the voice assistant.' : 'You need permission to use the voice assistant'}
 />

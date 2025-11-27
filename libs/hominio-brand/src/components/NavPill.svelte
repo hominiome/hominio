@@ -44,6 +44,8 @@
 		onCloseCapabilityModal = () => {},
 		onCloseSuccessModal = () => {},
 		agentAvatar = null, // Agent avatar image path (e.g., "/brand/agents/charles.png")
+		capabilityModalTitle = 'Access required',
+		capabilityModalMessage = 'You need permission to use the voice assistant',
 	} = $props();
 	
 	let userImageFailed = $state(false);
@@ -148,8 +150,8 @@
 						</svg>
 					</div>
 					<div class="connection-text-group">
-						<p class="connection-text">Access required</p>
-						<p class="connection-subtext">You need permission to use the voice assistant</p>
+						<p class="connection-text">{capabilityModalTitle}</p>
+						<p class="connection-subtext">{capabilityModalMessage}</p>
 					</div>
 					<div class="request-access-container">
 						<button onclick={onRequestAccess} class="request-access-btn">
