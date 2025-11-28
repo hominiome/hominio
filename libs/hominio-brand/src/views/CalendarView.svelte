@@ -4,7 +4,7 @@
 	Pure presentation component - no business logic
 -->
 <script lang="ts">
-	import { GlassCard } from '@hominio/brand';
+	import GlassCard from '../components/GlassCard.svelte';
 
 	import type { CalendarEntry } from './types.js';
 
