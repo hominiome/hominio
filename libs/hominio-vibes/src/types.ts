@@ -7,12 +7,11 @@ export interface VibeConfig {
 	name: string;
 	role: string;
 	description: string;
-	dataContext?: DataContextItem[];
+	vibePrompt: string; // Single unified prompt (replaces systemInstructionTemplate, examplesText, dataContext)
+	dataContextSchemas?: string[]; // Schema IDs for dynamic data contexts (menu, wellness, calendar)
 	skills: Skill[];
 }
 
-// Legacy alias for backwards compatibility during migration
-export type AgentConfig = VibeConfig;
 
 export interface DataContextItem {
 	// ID for identifying specific data context items (e.g., "menu")
@@ -30,12 +29,9 @@ export interface DataContextItem {
 export interface Skill {
 	id: string;
 	name: string;
-	description: string;
+	description: string; // Contains all instructions about when and how to use this skill
 	functionId: string;
 	parameters?: Record<string, ParameterDefinition>;
-	// Skill-specific data context (e.g., menu data for show-menu skill)
-	// Only injected when this specific skill is called
-	dataContext?: DataContextItem | DataContextItem[];
 }
 
 export interface ParameterDefinition {
@@ -58,8 +54,13 @@ export interface FunctionContext {
 	skillDataContext?: DataContextItem[]; // Skill-specific data context (e.g., menu data for show-menu skill)
 	userId?: string;
 	vibeId: string;
-	// Legacy alias for backwards compatibility during migration
-	agentId?: string;
+	// Automatically injected current date/time - always available in every tool call
+	now?: {
+		date: string; // YYYY-MM-DD format
+		dateFormatted: string; // Human-readable format (e.g., "Montag, 25. November 2025")
+		time: string; // HH:MM:SS format
+		timestamp: string; // ISO timestamp
+	};
 }
 
 export interface FunctionResult {

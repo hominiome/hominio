@@ -205,14 +205,11 @@ export async function getWellnessServicesByCategory(category) {
 
 /**
  * Get wellness context string for AI
- * Uses formatter function defaults (no hardcoded config in store)
+ * NOTE: This function is deprecated. Use getWellnessContextString from show-wellness.js directly with contextConfig.
+ * @deprecated Use getWellnessContextString from show-wellness.js with contextConfig from skill config
  * @returns {Promise<string>}
  */
 export async function getWellnessContextString() {
-	const data = await getWellnessData();
-	// Import formatter function
-	const { getWellnessContextString: formatWellnessContext } = await import('./show-wellness.js');
-	// Pass empty config - formatter function has its own defaults
-	return formatWellnessContext(data, {});
+	throw new Error('getWellnessContextString from wellness-store.js is deprecated. Use getWellnessContextString from show-wellness.js with contextConfig from skill config.');
 }
 

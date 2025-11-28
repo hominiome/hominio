@@ -221,6 +221,7 @@ export function createVoiceCallService(options?: {
 			ws.onmessage = (event) => {
 				try {
 					const message = JSON.parse(event.data);
+					
 
 					// CRITICAL: Process ALL message types, but audio ALWAYS gets played
 					// Even if other message types (toolCall, serverContent) are received,
@@ -259,17 +260,21 @@ export function createVoiceCallService(options?: {
 							
 							// Handle tool call on client side
 							// Support multiple formats:
-							// 1. Direct format: {type: 'toolCall', toolName: '...', args: {...}}
+							// 1. Direct format: {type: 'toolCall', toolName: '...', args: {...}, contextString: '...'}
 							// 2. Function calls array: {type: 'toolCall', data: {functionCalls: [{name: '...', args: {...}}]}}
 							// 3. Single function call: {type: 'toolCall', data: {name: '...', args: {...}}}
 							
 							let toolName: string | null = null;
 							let toolArgs: any = {};
+							let contextString: string | undefined = undefined;
+							let result: any = undefined;
 							
-							// Format 1: Direct toolName/args
+							// Format 1: Direct toolName/args (with optional contextString and result)
 							if (message.toolName) {
 								toolName = message.toolName;
 								toolArgs = message.args || {};
+								contextString = message.contextString;
+								result = message.result;
 							}
 							// Format 2: Function calls array (from Google Live API)
 							else if (message.data?.functionCalls && Array.isArray(message.data.functionCalls) && message.data.functionCalls.length > 0) {
@@ -284,9 +289,9 @@ export function createVoiceCallService(options?: {
 							}
 							
 							if (options?.onToolCall && toolName) {
+								// Call handler once with all parameters
 								try {
-									console.log('[VoiceCall] Executing tool call:', toolName, toolArgs);
-									options.onToolCall(toolName, toolArgs);
+									options.onToolCall(toolName, toolArgs, contextString, result);
 								} catch (toolErr) {
 									console.error('[VoiceCall] Tool call handler error:', toolErr);
 								}
@@ -294,6 +299,7 @@ export function createVoiceCallService(options?: {
 								console.warn('[VoiceCall] Tool call received but no handler or invalid format:', message);
 							}
 							break;
+
 
 						case 'error':
 							console.error('[VoiceCall] Server error:', message.message);

@@ -60,43 +60,31 @@ export const uiComponent = () => Promise.resolve({ default: null });
 /**
  * Generate menu context string for LLM from agent config data
  * Formats the menu data from agent config into a readable string for LLM prompts
- * Uses configurable instructions, category names, currency, and reminder from menu config
- * @param {Object} menuData - Menu data from agent config dataContext
- * @param {Object} [menuConfig={}] - Full menu config item with instructions, categoryNames, currency, reminder
- * @param {string[]} [menuConfig.instructions] - Array of instruction strings for LLM
- * @param {string} [menuConfig.reminder] - Reminder text to append at end
- * @param {Object<string, string>} [menuConfig.categoryNames] - Mapping of category keys to display names
- * @param {Object} [menuConfig.currency] - Currency configuration
- * @param {string} [menuConfig.currency.code] - Currency code (e.g., 'EUR')
- * @param {string} [menuConfig.currency.locale] - Locale for formatting (e.g., 'de-DE')
+ * Uses configurable instructions, category names, currency, and reminder from skill contextConfig
+ * @param {Object} menuData - Menu data from store
+ * @param {Object} contextConfig - Context config from skill.contextConfig (REQUIRED)
+ * @param {string[]} contextConfig.instructions - Array of instruction strings for LLM
+ * @param {string} contextConfig.reminder - Reminder text to append at end
+ * @param {Object<string, string>} contextConfig.categoryNames - Mapping of category keys to display names
+ * @param {Object} contextConfig.currency - Currency configuration
+ * @param {string} contextConfig.currency.code - Currency code (e.g., 'EUR')
+ * @param {string} contextConfig.currency.locale - Locale for formatting (e.g., 'de-DE')
  * @returns {string} Formatted menu context string
  */
-export function getMenuContextString(menuData, menuConfig = {}) {
+export function getMenuContextString(menuData, contextConfig) {
 	if (!menuData) {
 		return '';
 	}
 	
-	// Get configurable values from menuConfig, with fallbacks
-	const instructions = menuConfig.instructions || [
-		'DU MUSST DIESE REGELN STRENG BEFOLGEN:',
-		'1. Du darfst NUR Menüpunkte erwähnen, die unten aufgelistet sind.',
-		'2. ALLE Preise sind in EUR (Euro) NUR.',
-		'3. Wenn ein Benutzer nach einem Artikel fragt, der NICHT auf dieser Liste steht, musst du ihn höflich informieren, dass dieser Artikel nicht verfügbar ist.'
-	];
+	if (!contextConfig) {
+		throw new Error('contextConfig is required for getMenuContextString');
+	}
 	
-	const reminder = menuConfig.reminder || 'ERINNERE DICH: Wenn ein Benutzer nach IRGENDEINEM Artikel fragt, der oben NICHT aufgeführt ist, musst du sagen, dass er nicht verfügbar ist. Alle Preise sind nur in EUR.';
-	
-	const categoryNames = menuConfig.categoryNames || {
-		appetizers: 'VORSPEISEN',
-		mains: 'HAUPTGERICHTE',
-		desserts: 'NACHSPEISEN',
-		drinks: 'GETRÄNKE'
-	};
-	
-	const currency = menuConfig.currency || {
-		code: 'EUR',
-		locale: 'de-DE'
-	};
+	// Get configurable values from contextConfig (from skill config JSON)
+	const instructions = contextConfig.instructions || [];
+	const reminder = contextConfig.reminder || '';
+	const categoryNames = contextConfig.categoryNames || {};
+	const currency = contextConfig.currency || { code: 'EUR', locale: 'de-DE' };
 	
 	const lines = [
 		'[Menu Context - CRITICAL INSTRUCTIONS]',

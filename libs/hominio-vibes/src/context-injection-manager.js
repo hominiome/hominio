@@ -4,43 +4,86 @@
  * Maps skill IDs to context formatters
  */
 
-import { getMenuContextString } from '../lib/functions/menu-store.js';
-import { getWellnessContextString } from '../lib/functions/wellness-store.js';
+import { loadVibeConfig } from './vibe-loader.js';
+import { getMenuData } from '../lib/functions/menu-store.js';
+import { getWellnessData } from '../lib/functions/wellness-store.js';
 import { getCalendarContextString } from '../lib/functions/calendar-store.js';
+import { getMenuContextString } from '../lib/functions/show-menu.js';
+import { getWellnessContextString } from '../lib/functions/show-wellness.js';
 
 /**
- * Registry of skill IDs to context formatter functions
- * Maps skillId → async function that returns context string
+ * Registry of skill IDs to data getters and formatters
+ * Maps skillId → { getData, formatter }
  */
 const CONTEXT_FORMATTERS = {
-	'show-menu': getMenuContextString,
-	'show-wellness': getWellnessContextString,
-	'view-calendar': getCalendarContextString,
-	'create-calendar-entry': getCalendarContextString,
-	'edit-calendar-entry': getCalendarContextString,
-	'delete-calendar-entry': getCalendarContextString
+	'show-menu': {
+		getData: getMenuData,
+		formatter: getMenuContextString
+	},
+	'show-wellness': {
+		getData: getWellnessData,
+		formatter: getWellnessContextString
+	},
+	'view-calendar': {
+		getData: null, // Calendar doesn't need data getter
+		formatter: getCalendarContextString
+	},
+	'create-calendar-entry': {
+		getData: null,
+		formatter: getCalendarContextString
+	},
+	'edit-calendar-entry': {
+		getData: null,
+		formatter: getCalendarContextString
+	},
+	'delete-calendar-entry': {
+		getData: null,
+		formatter: getCalendarContextString
+	}
 };
 
 /**
  * Inject context for a skill
  * @param {Object} options - Injection options
  * @param {string} options.skillId - Skill ID (e.g., "show-menu", "show-wellness")
+ * @param {string} options.vibeId - Vibe ID (e.g., "charles", "karl")
  * @param {Function} options.injectFn - Function to inject context (e.g., session.sendClientContent)
  * @returns {Promise<void>}
  */
-export async function injectContextForSkill({ skillId, injectFn }) {
+export async function injectContextForSkill({ skillId, vibeId, injectFn }) {
 	try {
-		// Get formatter function for this skill
-		const formatter = CONTEXT_FORMATTERS[skillId];
+		// Get formatter configuration for this skill
+		const formatterConfig = CONTEXT_FORMATTERS[skillId];
 		
-		if (!formatter) {
+		if (!formatterConfig) {
 			// No context formatter for this skill - that's okay, some skills don't need context injection
 			console.log(`[ContextInjection] No context formatter for skill: ${skillId}`);
 			return;
 		}
 		
+		// Load vibe config to get skill's contextConfig
+		const vibeConfig = await loadVibeConfig(vibeId);
+		const skill = vibeConfig.skills.find(s => s.id === skillId);
+		
+		if (!skill) {
+			console.warn(`[ContextInjection] Skill not found: ${skillId} in vibe ${vibeId}`);
+			return;
+		}
+		
 		// Get context string
-		const contextString = await formatter();
+		let contextString;
+		
+		if (formatterConfig.getData) {
+			// Skills that need data from stores (menu, wellness)
+			const data = await formatterConfig.getData();
+			if (!skill.contextConfig) {
+				throw new Error(`Skill ${skillId} requires contextConfig but it's missing in vibe config`);
+			}
+			contextString = formatterConfig.formatter(data, skill.contextConfig);
+		} else {
+			// Skills that don't need data (calendar)
+			contextString = await formatterConfig.formatter();
+		}
 		
 		if (!contextString) {
 			console.warn(`[ContextInjection] No context returned for skill: ${skillId}`);

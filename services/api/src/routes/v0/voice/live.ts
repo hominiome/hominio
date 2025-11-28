@@ -62,7 +62,7 @@ export const voiceLiveHandler = {
         let initialVibeId: string | null = null;
         if (request) {
             const url = new URL(request.url);
-            initialVibeId = url.searchParams.get('vibeId') || url.searchParams.get('agentId'); // Support both for migration
+            initialVibeId = url.searchParams.get('vibeId');
         }
 
         let authData: AuthData | null = null;
@@ -119,6 +119,7 @@ export const voiceLiveHandler = {
 
             // Load all vibe configs and build comprehensive tool schema
             const { buildSystemInstruction, buildActionSkillArgsSchema, buildQueryDataContextSchema, listVibes } = await import('@hominio/vibes');
+            const { buildRepeatedPrompt } = await import('@hominio/vibes');
             const allSkills = [];
             const skillToVibeMap: Record<string, string> = {};
             let actionSkillArgsSchema: any = null;
@@ -154,8 +155,8 @@ export const voiceLiveHandler = {
                 console.error(`[voice/live] Failed to build tool schema:`, err);
             }
 
-            // Build unified Hominio system instruction
-            let systemInstruction = await buildSystemInstruction({ activeVibeIds, vibeConfigs });
+            // Build unified Hominio system instruction with repeatedPrompt included at call start
+            let systemInstruction = await buildSystemInstruction({ activeVibeIds, vibeConfigs, includeRepeatedPrompt: true });
 
             // Load initial vibe context if provided
             if (initialVibeId) {
@@ -163,8 +164,8 @@ export const voiceLiveHandler = {
                     activeVibeIds.push(initialVibeId);
                     const vibeConfig = vibeConfigs[initialVibeId];
                     if (vibeConfig) {
-                        // Rebuild system instruction with initial vibe
-                        systemInstruction = await buildSystemInstruction({ activeVibeIds, vibeConfigs });
+                        // Rebuild system instruction with initial vibe and repeatedPrompt
+                        systemInstruction = await buildSystemInstruction({ activeVibeIds, vibeConfigs, includeRepeatedPrompt: true });
                         console.log(`[voice/live] ✅ Loaded initial vibe context: ${initialVibeId}`);
                         console.log(`[voice/live] Vibe config has ${vibeConfig.skills?.length || 0} skills:`, vibeConfig.skills?.map(s => s.id) || []);
                     }
@@ -175,6 +176,7 @@ export const voiceLiveHandler = {
 
             console.log(`[voice/live] System instruction length: ${systemInstruction.length} chars`);
             console.log(`[voice/live] System instruction preview (first 1000 chars): ${systemInstruction.substring(0, 1000)}`);
+
 
             const config = {
                 responseModalities: [Modality.AUDIO],
@@ -332,129 +334,141 @@ export const voiceLiveHandler = {
                                 }
 
                                 // Step 4: Handle Function Calls (after audio is already sent)
-                                for (const part of parts) {
-                                    if (!part.functionCall) continue;
+                                // Centralized tool call handler - processes each tool call exactly once
+                                // Track processed tool calls by ID to prevent duplicates
+                                const processedToolCallIds = new Set<string>();
 
-                                    const functionCall = part.functionCall;
-                                    console.log("[voice/live] Handling function call:", JSON.stringify(functionCall));
+                                // Collect all function calls first, then process unique ones
+                                const functionCalls = parts
+                                    .filter((p: any) => p.functionCall)
+                                    .map((p: any) => p.functionCall)
+                                    .filter((fc: any) => {
+                                        // Deduplicate by ID - only process each unique function call once
+                                        if (processedToolCallIds.has(fc.id)) {
+                                            return false; // Skip duplicate
+                                        }
+                                        processedToolCallIds.add(fc.id);
+                                        return true; // Process this one
+                                    });
 
-                                    // Send tool call to frontend for client-side handling
-                                    ws.send(JSON.stringify({
-                                        type: "toolCall",
-                                        toolName: functionCall.name,
-                                        args: functionCall.args || {},
-                                    }));
+                                // Process each unique function call exactly once
+                                for (const functionCall of functionCalls) {
 
+                                    // Centralized tool call handler
                                     let response: any = { error: "Unknown tool" };
+                                    let contextString: string | undefined = undefined;
+                                    let resultData: any = undefined;
+
                                     if (functionCall.name === "get_name") {
                                         response = { name: "hominio" };
                                     } else if (functionCall.name === "queryDataContext") {
-                                        // Handle queryDataContext tool call: load data context from stores
                                         const { schemaId, params = {} } = functionCall.args || {};
-                                        console.log(`[voice/live] 🔄 Querying data context: schema="${schemaId}"`);
-
                                         try {
                                             const { handleQueryDataContext } = await import('@hominio/vibes');
                                             const result = await handleQueryDataContext({
                                                 schemaId,
                                                 params,
-                                                injectFn: (content) => session.sendClientContent(content)
+                                                injectFn: (content) => {
+                                                    contextString = content.turns || '';
+                                                    session.sendClientContent(content);
+                                                }
                                             });
 
-                                            if (result.success) {
-                                                console.log(`[voice/live] ✅ Loaded data context: ${schemaId}`);
-                                                response = {
-                                                    success: true,
-                                                    message: result.message || `Loaded ${schemaId} data context`,
-                                                    schemaId: schemaId
-                                                };
-                                            } else {
-                                                response = {
-                                                    success: false,
-                                                    error: result.error || `Failed to load ${schemaId} data context`
-                                                };
-                                            }
+                                            response = result.success ? {
+                                                success: true,
+                                                message: result.message || `Loaded ${schemaId} data context`,
+                                                schemaId: schemaId
+                                            } : {
+                                                success: false,
+                                                error: result.error || `Failed to load ${schemaId} data context`
+                                            };
+                                            resultData = result.success ? {
+                                                success: true,
+                                                message: result.message || `Loaded ${schemaId} data context`,
+                                                schemaId: schemaId,
+                                                data: result.data || null
+                                            } : {
+                                                success: false,
+                                                error: result.error || `Failed to load ${schemaId} data context`
+                                            };
                                         } catch (err) {
                                             console.error(`[voice/live] Failed to query data context:`, err);
                                             response = { success: false, error: `Failed to query data context: ${err instanceof Error ? err.message : 'Unknown error'}` };
+                                            resultData = { success: false, error: `Failed to query data context: ${err instanceof Error ? err.message : 'Unknown error'}` };
                                         }
                                     } else if (functionCall.name === "queryVibeContext") {
-                                        // Handle vibe context query: load context and inject into conversation
                                         const vibeId = functionCall.args?.vibeId || 'unknown';
-                                        console.log(`[voice/live] 🔄 Querying vibe context: "${vibeId}" (serverContent handler)`);
-
                                         try {
-                                            // Check if vibe is already active
                                             if (!activeVibeIds.includes(vibeId)) {
                                                 activeVibeIds.push(vibeId);
                                             }
-
-                                            // Load vibe config if not already loaded
                                             if (!vibeConfigs[vibeId]) {
                                                 vibeConfigs[vibeId] = await loadVibeConfig(vibeId);
                                             }
 
-                                            // Build vibe context string and await before responding
                                             const { buildVibeContextString, getVibeTools } = await import('@hominio/vibes');
-                                            const vibeContext = await buildVibeContextString(vibeId);
-                                            const availableTools = await getVibeTools(vibeId);
+                                            contextString = await buildVibeContextString(vibeId);
+                                            await getVibeTools(vibeId);
 
-                                            // Inject vibe context into conversation BEFORE sending tool response
                                             session.sendClientContent({
-                                                turns: vibeContext,
+                                                turns: contextString,
                                                 turnComplete: true,
                                             });
-
-                                            console.log(`[voice/live] ✅ Loaded vibe context: ${vibeId}`);
-                                            console.log(`[voice/live] Available tools: ${availableTools.join(', ')}`);
 
                                             response = {
                                                 success: true,
                                                 message: `Loaded ${vibeId} vibe context`,
                                                 vibeId: vibeId
                                             };
+                                            resultData = {
+                                                success: true,
+                                                message: `Loaded ${vibeId} vibe context`,
+                                                vibeId: vibeId,
+                                                contextConfig: vibeConfigs[vibeId] || null
+                                            };
                                         } catch (err) {
                                             console.error(`[voice/live] Failed to load vibe context:`, err);
                                             response = { success: false, error: `Failed to load vibe context: ${vibeId}` };
+                                            resultData = { success: false, error: `Failed to load vibe context: ${vibeId}` };
                                         }
                                     } else if (functionCall.name === "actionSkill") {
-                                        // Handle actionSkill tool call
-                                        const { vibeId, skillId, args } = functionCall.args || {};
-                                        // Support legacy agentId parameter
-                                        const effectiveVibeId = vibeId || (functionCall.args as any)?.agentId;
-                                        console.log(`[voice/live] ✅ Handling actionSkill tool call: vibe="${effectiveVibeId}", skill="${skillId}", args:`, args);
-
-                                        // Use unified context injection manager
-                                        try {
-                                            const { injectContextForSkill } = await import('@hominio/vibes');
-                                            await injectContextForSkill({
-                                                skillId: skillId,
-                                                injectFn: (content) => session.sendClientContent(content)
-                                            });
-                                        } catch (err) {
-                                            console.error(`[voice/live] Error injecting context for skill ${skillId}:`, err);
-                                            // Continue even if context injection fails
-                                        }
-
-                                        response = { success: true, message: `Executing skill ${skillId} for vibe ${effectiveVibeId}`, vibeId: effectiveVibeId, skillId };
+                                        const { vibeId, skillId } = functionCall.args || {};
+                                        response = { success: true, message: `Executing skill ${skillId} for vibe ${vibeId}`, vibeId, skillId };
+                                        resultData = response; // Include result for actionSkill too
                                     }
 
-                                    console.log("[voice/live] Sending tool response:", JSON.stringify(response));
+                                    // Send tool call to frontend (always send, but conditionally include contextString/result)
+                                    ws.send(JSON.stringify({
+                                        type: "toolCall",
+                                        toolName: functionCall.name,
+                                        args: functionCall.args || {},
+                                        ...(contextString !== undefined && { contextString }),
+                                        ...(resultData !== undefined && { result: resultData })
+                                    }));
 
+                                    // Send response back to Google
                                     session.sendToolResponse({
-                                        functionResponses: [
-                                            {
-                                                id: functionCall.id,
-                                                name: functionCall.name,
-                                                response: { result: response }
-                                            }
-                                        ]
+                                        functionResponses: [{
+                                            id: functionCall.id,
+                                            name: functionCall.name,
+                                            response: { result: response }
+                                        }]
                                     });
+
+                                    // Inject repeatedPrompt after every tool call
+                                    try {
+                                        const repeatedPrompt = await buildRepeatedPrompt();
+                                        session.sendClientContent({
+                                            turns: repeatedPrompt,
+                                            turnComplete: false
+                                        });
+                                    } catch (err) {
+                                        console.error(`[voice/live] Failed to inject repeatedPrompt:`, err);
+                                    }
                                 }
 
                                 // 4. Handle Turn Complete / Other Content
                                 if (message.serverContent.turnComplete) {
-                                    console.log(`[voice/live] 🏁 TURN COMPLETE (user ${authData.sub})`);
                                     // Forward server content to client (e.g. for UI state)
                                     ws.send(JSON.stringify({
                                         type: "serverContent",
@@ -475,199 +489,10 @@ export const voiceLiveHandler = {
                                     data: { setupComplete: message.setupComplete },
                                 }));
                             } else if (message.toolCall) {
-                                // Handle top-level toolCall (if SDK abstracts it this way)
-                                console.log("[voice/live] Received top-level tool call:", JSON.stringify(message.toolCall));
-
-                                const functionCalls = message.toolCall.functionCalls;
-
-                                // Send each tool call to frontend for client-side handling
-                                functionCalls.forEach((fc: any) => {
-                                    ws.send(JSON.stringify({
-                                        type: "toolCall",
-                                        toolName: fc.name,
-                                        args: fc.args || {},
-                                        // Also include data format for compatibility
-                                        data: {
-                                            functionCalls: [{
-                                                name: fc.name,
-                                                args: fc.args || {},
-                                                id: fc.id
-                                            }]
-                                        }
-                                    }));
-                                });
-
-                                // Send success responses back to Google (frontend handles the actual work)
-                                // Import vibe utilities once before processing
-                                const { buildVibeContextString, getVibeTools } = await import('@hominio/vibes');
-
-                                // Process tool calls asynchronously
-                                const responses = await Promise.all(functionCalls.map(async (fc: any) => {
-                                    const toolName = fc.name;
-                                    console.log(`[voice/live] 🔧 Processing tool call: "${toolName}"`, JSON.stringify(fc.args));
-
-                                    // Handle known tools
-                                    if (toolName === "get_name") {
-                                        console.log(`[voice/live] ✅ Responding to get_name`);
-                                        return {
-                                            name: "get_name",
-                                            response: { result: { name: "hominio" } },
-                                            id: fc.id
-                                        };
-                                    }
-
-                                    if (toolName === "queryDataContext") {
-                                        // Handle queryDataContext tool call: load data context from stores
-                                        const { schemaId, params = {} } = fc.args || {};
-                                        console.log(`[voice/live] 🔄 Querying data context: schema="${schemaId}"`);
-
-                                        try {
-                                            const { handleQueryDataContext } = await import('@hominio/vibes');
-                                            const result = await handleQueryDataContext({
-                                                schemaId,
-                                                params,
-                                                injectFn: (content) => session.sendClientContent(content)
-                                            });
-
-                                            if (result.success) {
-                                                console.log(`[voice/live] ✅ Loaded data context: ${schemaId}`);
-                                                return {
-                                                    name: "queryDataContext",
-                                                    response: {
-                                                        result: {
-                                                            success: true,
-                                                            message: result.message || `Loaded ${schemaId} data context`,
-                                                            schemaId: schemaId
-                                                        }
-                                                    },
-                                                    id: fc.id
-                                                };
-                                            } else {
-                                                return {
-                                                    name: "queryDataContext",
-                                                    response: {
-                                                        result: {
-                                                            success: false,
-                                                            error: result.error || `Failed to load ${schemaId} data context`
-                                                        }
-                                                    },
-                                                    id: fc.id
-                                                };
-                                            }
-                                        } catch (err) {
-                                            console.error(`[voice/live] Failed to query data context:`, err);
-                                            return {
-                                                name: "queryDataContext",
-                                                response: { result: { success: false, error: `Failed to query data context: ${err instanceof Error ? err.message : 'Unknown error'}` } },
-                                                id: fc.id
-                                            };
-                                        }
-                                    }
-
-                                    if (toolName === "queryVibeContext") {
-                                        // Handle vibe context query: load context and inject into conversation
-                                        const vibeId = fc.args?.vibeId || 'unknown';
-                                        console.log(`[voice/live] 🔄 Querying vibe context: "${vibeId}"`);
-
-                                        // Check if vibe is already active
-                                        if (!activeVibeIds.includes(vibeId)) {
-                                            activeVibeIds.push(vibeId);
-                                        }
-
-                                        // Load vibe config if not already loaded
-                                        if (!vibeConfigs[vibeId]) {
-                                            try {
-                                                vibeConfigs[vibeId] = await loadVibeConfig(vibeId);
-                                            } catch (err) {
-                                                console.error(`[voice/live] Failed to load vibe config:`, err);
-                                                return {
-                                                    name: "queryVibeContext",
-                                                    response: { result: { success: false, error: `Failed to load vibe context: ${vibeId}` } },
-                                                    id: fc.id
-                                                };
-                                            }
-                                        }
-
-                                        // Build vibe context string and await before responding
-                                        try {
-                                            const { buildVibeContextString, getVibeTools } = await import('@hominio/vibes');
-                                            const vibeContext = await buildVibeContextString(vibeId);
-                                            const availableTools = await getVibeTools(vibeId);
-
-                                            // Inject vibe context into conversation BEFORE sending tool response
-                                            session.sendClientContent({
-                                                turns: vibeContext,
-                                                turnComplete: true,
-                                            });
-
-                                            console.log(`[voice/live] ✅ Loaded vibe context: ${vibeId}`);
-                                            console.log(`[voice/live] Available tools: ${availableTools.join(', ')}`);
-
-                                            return {
-                                                name: "queryVibeContext",
-                                                response: { result: { success: true, message: `Loaded ${vibeId} vibe context`, vibeId: vibeId } },
-                                                id: fc.id
-                                            };
-                                        } catch (err) {
-                                            console.error(`[voice/live] Error building vibe context:`, err);
-                                            return {
-                                                name: "queryVibeContext",
-                                                response: { result: { success: false, error: `Failed to build vibe context: ${vibeId}` } },
-                                                id: fc.id
-                                            };
-                                        }
-                                    }
-
-                                    if (toolName === "actionSkill") {
-                                        // Frontend handles actionSkill execution, just acknowledge
-                                        // Flatten parameters: args are top-level in tool call, but we need to pass them as 'args' object
-                                        const { vibeId, skillId, ...rawArgs } = fc.args || {};
-                                        // Support legacy agentId parameter
-                                        const effectiveVibeId = vibeId || (fc.args as any)?.agentId;
-
-                                        // Handle potential nested args from LLM (hallucination or habit)
-                                        // If rawArgs has a single property 'args' which is an object, use that instead
-                                        let args = rawArgs;
-                                        if (Object.keys(rawArgs).length === 1 && rawArgs.args && typeof rawArgs.args === 'object') {
-                                            console.log(`[voice/live] ⚠️ Detected nested 'args' object from LLM, flattening...`);
-                                            args = rawArgs.args;
-                                        }
-
-                                        console.log(`[voice/live] 🔧 Processing tool call: "${toolName}"`, JSON.stringify(fc));
-                                        console.log(`[voice/live] ✅ Handling actionSkill tool call: vibe="${effectiveVibeId}", skill="${skillId}", args:`, args);
-
-                                        // Use unified context injection manager
-                                        try {
-                                            const { injectContextForSkill } = await import('@hominio/vibes');
-                                            await injectContextForSkill({
-                                                skillId: skillId,
-                                                injectFn: (content) => session.sendClientContent(content)
-                                            });
-                                        } catch (err) {
-                                            console.error(`[voice/live] Error injecting context for skill ${skillId}:`, err);
-                                            // Continue even if context injection fails
-                                        }
-
-                                        return {
-                                            name: "actionSkill",
-                                            response: { result: { success: true, message: `Executing skill ${skillId} for vibe ${effectiveVibeId}`, vibeId: effectiveVibeId, skillId } },
-                                            id: fc.id
-                                        };
-                                    }
-
-                                    // Unknown tool
-                                    console.warn(`[voice/live] ⚠️ Unknown tool: "${toolName}"`);
-                                    return {
-                                        name: toolName,
-                                        response: { result: { error: `Unknown tool: ${toolName}` } },
-                                        id: fc.id
-                                    };
-                                }));
-
-                                console.log("[voice/live] Sending top-level tool response:", JSON.stringify(responses));
-                                session.sendToolResponse({
-                                    functionResponses: responses
-                                });
+                                // NOTE: Tool calls are already handled via serverContent.modelTurn.parts above
+                                // This path is intentionally empty to prevent duplicate processing
+                                // Tool calls come through serverContent.modelTurn.parts, not as separate toolCall messages
+                                // All tool call handling code has been removed to prevent duplicates
                             }
                         } catch (error) {
                             console.error("[voice/live] Error forwarding message to client:", error);

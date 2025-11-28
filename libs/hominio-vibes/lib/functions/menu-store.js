@@ -198,14 +198,11 @@ export async function getMenuItemsByCategory(category) {
 
 /**
  * Get menu context string for AI
- * Uses formatter function defaults (no hardcoded config in store)
+ * NOTE: This function is deprecated. Use getMenuContextString from show-menu.js directly with contextConfig.
+ * @deprecated Use getMenuContextString from show-menu.js with contextConfig from skill config
  * @returns {Promise<string>}
  */
 export async function getMenuContextString() {
-	const data = await getMenuData();
-	// Import formatter function
-	const { getMenuContextString: formatMenuContext } = await import('./show-menu.js');
-	// Pass empty config - formatter function has its own defaults
-	return formatMenuContext(data, {});
+	throw new Error('getMenuContextString from menu-store.js is deprecated. Use getMenuContextString from show-menu.js with contextConfig from skill config.');
 }
 

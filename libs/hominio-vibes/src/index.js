@@ -4,8 +4,6 @@
  */
 
 export { loadVibeConfig, listVibes } from './vibe-loader.js';
-// Legacy export for backwards compatibility during migration
-export { loadVibeConfig as loadAgentConfig } from './vibe-loader.js';
 export { loadFunction } from './function-loader.js';
 export { handleActionSkill } from './action-skill-handler.js';
 export { default as UIRenderer } from './ui-renderer.svelte';
@@ -19,10 +17,19 @@ export { getMenuContextString } from '../lib/functions/show-menu.js';
 export { getWellnessContextString } from '../lib/functions/show-wellness.js';
 
 // Export calendar context generator for LLM context injection
-export { getCalendarContextString, calendarEntries } from '../lib/functions/calendar-store.js';
+export { getCalendarContextString, calendarEntries, getEntries } from '../lib/functions/calendar-store.js';
+
+// Export menu store functions
+export { getMenuData, menuData, menuConfig } from '../lib/functions/menu-store.js';
+
+// Export wellness store functions
+export { getWellnessData, wellnessData, wellnessConfig } from '../lib/functions/wellness-store.js';
 
 // Export system instruction builder
 export { buildSystemInstruction } from './system-instruction-builder.js';
+
+// Export call config loader
+export { loadCallConfig, buildRepeatedPrompt, buildInitialSystemInstruction } from './call-config-loader.js';
 
 // Export tool schema builder
 export { buildActionSkillArgsSchema, buildQueryDataContextSchema } from './tool-schema-builder.js';

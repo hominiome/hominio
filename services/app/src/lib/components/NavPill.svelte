@@ -46,14 +46,15 @@
 
 	// Initialize voice call service with tool call handler
 	const voiceCall = createVoiceCallService({
-		onToolCall: async (toolName, args) => {
-			console.log('[NavPill] Tool call:', toolName, args);
+		onToolCall: async (toolName: string, args: any, contextString?: string, result?: any) => {
 			
-			// Dispatch generic toolCall event for activity stream
+			// Dispatch generic toolCall event for activity stream with contextString and result
 			const toolCallEvent = new CustomEvent('toolCall', {
 				detail: {
 					toolName,
 					args,
+					contextString,
+					result,
 					timestamp: Date.now()
 				}
 			});
@@ -62,7 +63,6 @@
 			if (toolName === 'queryVibeContext') {
 				// Background query - vibe context queries don't require UI navigation
 				// The context is injected into the conversation automatically
-				console.log('[NavPill] Vibe context queried:', args.vibeId);
 			} else if (toolName === 'queryDataContext') {
 				// Background query - data context queries don't require UI navigation
 				// The context is injected into the conversation automatically

@@ -62,35 +62,30 @@ export const uiComponent = () => Promise.resolve({ default: null });
 /**
  * Generate wellness context string for LLM from agent config data
  * Formats the wellness data from agent config into a readable string for LLM prompts
- * @param {Object} wellnessData - Wellness data from agent config dataContext
- * @param {Object} [wellnessConfig={}] - Full wellness config item with instructions, categoryNames, currency, reminder
+ * @param {Object} wellnessData - Wellness data from store
+ * @param {Object} contextConfig - Context config from skill.contextConfig (REQUIRED)
+ * @param {string[]} contextConfig.instructions - Array of instruction strings for LLM
+ * @param {string} contextConfig.reminder - Reminder text to append at end
+ * @param {Object<string, string>} contextConfig.categoryNames - Mapping of category keys to display names
+ * @param {Object} contextConfig.currency - Currency configuration
+ * @param {string} contextConfig.currency.code - Currency code (e.g., 'EUR')
+ * @param {string} contextConfig.currency.locale - Locale for formatting (e.g., 'de-DE')
  * @returns {string} Formatted wellness context string
  */
-export function getWellnessContextString(wellnessData, wellnessConfig = {}) {
+export function getWellnessContextString(wellnessData, contextConfig) {
 	if (!wellnessData) {
 		return '';
 	}
 	
-	const instructions = wellnessConfig.instructions || [
-		'DU MUSST DIESE REGELN STRENG BEFOLGEN:',
-		'1. Du darfst NUR Wellness-Dienstleistungen erwähnen, die unten aufgelistet sind.',
-		'2. ALLE Preise sind in EUR (Euro) NUR.',
-		'3. Wenn ein Benutzer nach einer Dienstleistung fragt, die NICHT auf dieser Liste steht, musst du ihn höflich informieren, dass diese Dienstleistung nicht verfügbar ist.'
-	];
+	if (!contextConfig) {
+		throw new Error('contextConfig is required for getWellnessContextString');
+	}
 	
-	const reminder = wellnessConfig.reminder || 'ERINNERE DICH: Wenn ein Benutzer nach IRGENDEINER Dienstleistung fragt, die oben NICHT aufgeführt ist, musst du sagen, dass sie nicht verfügbar ist. Alle Preise sind nur in EUR.';
-	
-	const categoryNames = wellnessConfig.categoryNames || {
-		massages: 'MASSAGEN',
-		treatments: 'BEHANDLUNGEN',
-		packages: 'PAKETE',
-		facilities: 'EINRICHTUNGEN'
-	};
-	
-	const currency = wellnessConfig.currency || {
-		code: 'EUR',
-		locale: 'de-DE'
-	};
+	// Get configurable values from contextConfig (from skill config JSON)
+	const instructions = contextConfig.instructions || [];
+	const reminder = contextConfig.reminder || '';
+	const categoryNames = contextConfig.categoryNames || {};
+	const currency = contextConfig.currency || { code: 'EUR', locale: 'de-DE' };
 	
 	const lines = [
 		'[Wellness Context - CRITICAL INSTRUCTIONS]',

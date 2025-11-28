@@ -2,11 +2,42 @@
  * Data Context Schema Registry
  * Centralized registry of available data context schemas and their handlers
  * Maps schemaId → handler functions for querying and formatting context
+ * Returns simple formatted JSON data - no complex contextConfig needed
  */
 
-import { getMenuContextString } from '../lib/functions/menu-store.js';
-import { getWellnessContextString } from '../lib/functions/wellness-store.js';
 import { getCalendarContextString } from '../lib/functions/calendar-store.js';
+import { getMenuData } from '../lib/functions/menu-store.js';
+import { getWellnessData } from '../lib/functions/wellness-store.js';
+
+/**
+ * Simple formatter for menu data - returns formatted JSON string
+ */
+async function getMenuContextString(params = {}) {
+	const menu = await getMenuData();
+	if (!menu) return '';
+	
+	// Filter by category if specified
+	const { category } = params;
+	const filteredMenu = category ? { [category]: menu[category] || [] } : menu;
+	
+	// Return simple formatted JSON string
+	return JSON.stringify(filteredMenu, null, 2);
+}
+
+/**
+ * Simple formatter for wellness data - returns formatted JSON string
+ */
+async function getWellnessContextString(params = {}) {
+	const wellness = await getWellnessData();
+	if (!wellness) return '';
+	
+	// Filter by category if specified
+	const { category } = params;
+	const filteredWellness = category ? { [category]: wellness[category] || [] } : wellness;
+	
+	// Return simple formatted JSON string
+	return JSON.stringify(filteredWellness, null, 2);
+}
 
 /**
  * Schema handler definition

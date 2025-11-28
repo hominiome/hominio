@@ -277,6 +277,7 @@
 							aiState = 'thinking';
 							break;
 
+
 						case 'error':
 							console.error('[VoiceCall] Server error:', message.message);
 							error = message.message;

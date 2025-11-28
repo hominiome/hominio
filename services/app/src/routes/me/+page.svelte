@@ -20,6 +20,7 @@
 		result?: any;
 		error?: string;
 		isExpanded: boolean;
+		contextString?: string; // Ingested context string for queryVibeContext/queryDataContext
 	};
 
 	let activities = $state<ActivityItem[]>([]);
@@ -125,9 +126,36 @@
 		});
 	}
 
-	async function handleToolCall(toolName: string, args: any) {
+	async function handleToolCall(toolName: string, args: any, contextString?: string, result?: any) {
+		// Check if we already have a pending item for this tool call (by matching toolName + args + timestamp)
+		// This prevents duplicate UI items from the same tool call
+		const now = Date.now();
+		const existingItem = activities.find(item => 
+			item.toolName === toolName && 
+			JSON.stringify(item.args) === JSON.stringify(args) &&
+			Math.abs(now - item.timestamp) < 2000 // Within 2 seconds (tighter window)
+		);
+		
+		if (existingItem) {
+			// Update existing item with contextString and/or result if provided
+			if (contextString !== undefined || result !== undefined) {
+				activities = activities.map(item => {
+					if (item.id === existingItem.id) {
+						return { 
+							...item, 
+							contextString: contextString !== undefined ? contextString : item.contextString,
+							result: result !== undefined ? result : item.result
+						};
+					}
+					return item;
+				});
+			}
+			return; // Don't create duplicate item
+		}
+		
 		const id = nanoid();
 		const timestamp = Date.now();
+		
 		
 		// Create new activity item
 		const newItem: ActivityItem = {
@@ -136,8 +164,11 @@
 			toolName,
 			args,
 			status: 'pending',
-			isExpanded: true // Expand new item by default
+			isExpanded: toolName === 'actionSkill', // Expand skills by default, queries closed
+			contextString: contextString || undefined, // Set directly - can be undefined
+			result: result || undefined // Set result if available
 		};
+		
 
 		// Collapse previous items
 		activities = activities.map(item => ({
@@ -154,12 +185,9 @@
 		// Process the tool call
 		if (toolName === 'actionSkill') {
 			await processActionSkill(newItem);
-		} else if (toolName === 'queryVibeContext') {
-			// Background query - just log, mark as success immediately
-			updateActivityStatus(id, 'success');
-		} else if (toolName === 'queryDataContext') {
-			// Background query - just log, mark as success immediately
-			// Shows mini info message that AI queried data context
+		} else if (toolName === 'queryVibeContext' || toolName === 'queryDataContext') {
+			// Background query - mark as success
+			// contextString is already set on the item, just update status
 			updateActivityStatus(id, 'success');
 		}
 	}
@@ -167,7 +195,21 @@
 	function updateActivityStatus(id: string, status: 'success' | 'error', result?: any, error?: string) {
 		activities = activities.map(item => {
 			if (item.id === id) {
-				return { ...item, status, result, error };
+				// Extract contextString from result if present, otherwise keep existing
+				const contextString = result?.contextString || item.contextString;
+				// Remove contextString from result if it exists, to avoid duplication
+				const cleanResult = result && result.contextString ? { ...result, contextString: undefined } : result;
+				
+				const updated = { 
+					...item, 
+					status, 
+					result: cleanResult || item.result, 
+					error,
+					// Preserve contextString - prefer new one from result, otherwise keep existing
+					contextString: contextString !== undefined ? contextString : item.contextString
+				};
+				
+				return updated;
 			}
 			return item;
 		});
@@ -268,8 +310,8 @@
 		// Listen for unified toolCall events
 		const handleToolCallEvent = (event: Event) => {
 			const customEvent = event as CustomEvent;
-			const { toolName, args } = customEvent.detail;
-			handleToolCall(toolName, args);
+			const { toolName, args, contextString, result } = customEvent.detail;
+			handleToolCall(toolName, args, contextString, result);
 		};
 
 		window.addEventListener('toolCall', handleToolCallEvent);
@@ -295,6 +337,7 @@
 			window.removeEventListener('toolCall', handleToolCallEvent);
 		};
 	});
+
 
     function toggleItem(id: string) {
         activities = activities.map(item => {
