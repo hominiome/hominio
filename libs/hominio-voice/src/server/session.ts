@@ -186,7 +186,8 @@ export async function createVoiceSessionManager(
 				if (name === 'queryVibeContext') {
 					contextInjection.injectVibeContext(args?.vibeId || 'unknown', content.turns);
 				} else if (name === 'queryDataContext') {
-					contextInjection.injectDataContext(args?.schemaId || 'unknown', content.turns);
+					// Respect turnComplete from handler (defaults to false if not provided)
+					contextInjection.injectDataContext(args?.schemaId || 'unknown', content.turns, content.turnComplete ?? false);
 				} else {
 					contextInjection.injectContext(content.turns, content.turnComplete);
 				}
@@ -196,14 +197,28 @@ export async function createVoiceSessionManager(
 
 		// Inject repeated prompt to continue the conversation flow
 		// After queryDataContext: inject with turnComplete=false to nudge AI to continue with actionSkill
-		// After actionSkill: inject with turnComplete=false to continue the conversation
+		// After actionSkill: only inject if NOT a create operation (create operations should complete naturally)
 		// After queryVibeContext: don't inject (background operation, no follow-up needed)
-		if (name === 'queryDataContext' || name === 'actionSkill') {
+		if (name === 'queryDataContext') {
 			try {
 				const repeatedPrompt = await buildRepeatedPrompt();
 				await contextInjection.injectRepeatedPrompt(repeatedPrompt);
 			} catch (err) {
 				console.error('[hominio-voice] Failed to inject repeated prompt:', err);
+			}
+		} else if (name === 'actionSkill') {
+			// Only inject repeated prompt for non-create operations
+			// Create operations (create-calendar-entry, etc.) should complete naturally without prompting
+			const skillId = args?.skillId || '';
+			const isCreateOperation = skillId.includes('create') || skillId.includes('Create');
+			
+			if (!isCreateOperation) {
+				try {
+					const repeatedPrompt = await buildRepeatedPrompt();
+					await contextInjection.injectRepeatedPrompt(repeatedPrompt);
+				} catch (err) {
+					console.error('[hominio-voice] Failed to inject repeated prompt:', err);
+				}
 			}
 		}
 

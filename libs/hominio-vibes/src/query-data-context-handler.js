@@ -48,10 +48,12 @@ export async function handleQueryDataContext({ schemaId, params = {}, injectFn }
 		}
 		
 		// Inject context into conversation
+		// Use turnComplete: false to keep turn open - queryDataContext is followed by actionSkill
+		// We don't want the AI to respond after context injection, only after actionSkill
 		if (injectFn) {
 			injectFn({
 				turns: contextString,
-				turnComplete: true
+				turnComplete: false
 			});
 		}
 		

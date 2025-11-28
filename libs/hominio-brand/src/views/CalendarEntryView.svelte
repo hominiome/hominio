@@ -85,58 +85,54 @@
 
 <div class="w-full max-w-2xl mx-auto p-6">
 	{#if resolvedEntry}
-		<!-- Success Header - Large checkmark like reference -->
-		<div class="text-center mb-10">
-			<div class="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-secondary-400/20 to-secondary-500/15 rounded-full flex items-center justify-center animate-scale-in">
-				<svg class="w-8 h-8 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-				</svg>
-			</div>
-			<h2 class="text-3xl sm:text-4xl font-extrabold italic bg-gradient-to-br from-secondary-400 to-secondary-500 bg-clip-text text-transparent mb-3 tracking-tight">{actionTitle}</h2>
-			<p class="text-sm text-slate-600 font-medium m-0">{resolvedMessage}</p>
-		</div>
-		
-		<!-- Entry Card - Enhanced styling with secondary colors matching reference -->
-		<GlassCard class="p-0 overflow-hidden border-0 bg-white/70 backdrop-blur-md shadow-xl shadow-secondary-500/10 rounded-3xl mb-8 animate-slide-up" lifted={true}>
+		<!-- Entry Card - Compact, refined styling matching reference -->
+		<GlassCard class="p-0 overflow-hidden border-0 bg-white/80 backdrop-blur-xl shadow-lg shadow-secondary-500/5 rounded-2xl mb-6 animate-slide-up" lifted={true}>
 			<div class="flex flex-row items-stretch">
-				<!-- Time Column - Secondary gradient background -->
-				<div class="flex flex-col items-center justify-center py-10 px-7 bg-gradient-to-br from-secondary-500/5 to-secondary-500/10 min-w-[110px]">
-					<span class="text-2xl font-extrabold text-slate-800 leading-none mb-2">{formatTime(resolvedEntry.time)}</span>
-					<div class="w-1 h-5 bg-gradient-to-b from-secondary-400/40 to-secondary-500/20 my-2.5 rounded-full"></div>
-					<span class="text-base font-semibold text-slate-600">{calculateEndTime(resolvedEntry.time, resolvedEntry.duration)}</span>
+				<!-- Time Column - More prominent secondary gradient background -->
+				<div class="flex flex-col items-center justify-center py-8 px-6 bg-gradient-to-br from-secondary-400/15 via-secondary-500/10 to-secondary-600/5 min-w-[100px] border-r border-secondary-200/30">
+					<span class="text-2xl font-extrabold text-secondary-700 leading-none mb-1.5">{formatTime(resolvedEntry.time)}</span>
+					<div class="w-0.5 h-6 bg-gradient-to-b from-secondary-400/50 via-secondary-500/30 to-secondary-600/20 my-2 rounded-full"></div>
+					<span class="text-sm font-semibold text-secondary-600">{calculateEndTime(resolvedEntry.time, resolvedEntry.duration)}</span>
 				</div>
 				
 				<!-- Details Column -->
-				<div class="flex-1 py-8 px-9 flex flex-col justify-center">
-					<div class="flex items-center justify-between mb-5 gap-4">
-						<h3 class="text-2xl font-bold italic text-slate-800 m-0 leading-tight flex-1">{resolvedEntry.title}</h3>
-						<span class="text-[0.7rem] bg-gradient-to-r from-secondary-400 to-secondary-500 text-white px-3 py-1.5 rounded-full font-bold tracking-wider uppercase flex-shrink-0 shadow-sm">
+				<div class="flex-1 py-6 px-6 flex flex-col justify-center">
+					<div class="flex items-start justify-between mb-3 gap-3">
+						<h3 class="text-xl font-bold text-slate-800 m-0 leading-tight flex-1">{resolvedEntry.title}</h3>
+						<span class="text-[0.65rem] bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-2.5 py-1 rounded-full font-bold tracking-wider uppercase flex-shrink-0 shadow-sm">
 							{badgeText}
 						</span>
 					</div>
 					
-					<div class="flex flex-col gap-4 mb-5">
-						<div class="flex items-center gap-3">
-							<span class="text-base text-slate-600 font-medium">{formatDate(resolvedEntry.date)}</span>
-						</div>
-						
-						<div class="flex items-center gap-3">
-							<span class="inline-flex items-center gap-2 text-xs text-secondary-600 bg-gradient-to-r from-secondary-500/10 to-secondary-500/5 px-3 py-1.5 rounded-lg font-semibold">
-								<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-									<circle cx="12" cy="12" r="10"></circle>
-									<polyline points="12 6 12 12 16 14"></polyline>
-								</svg>
-								{formatDuration(resolvedEntry.duration)}
-							</span>
-						</div>
+					<div class="flex items-center gap-4 mb-2">
+						<span class="text-sm text-slate-600 font-medium">{formatDate(resolvedEntry.date)}</span>
+						<span class="inline-flex items-center gap-1.5 text-xs text-secondary-600 bg-gradient-to-r from-secondary-500/15 to-secondary-500/8 px-2.5 py-1 rounded-md font-semibold">
+							<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<circle cx="12" cy="12" r="10"></circle>
+								<polyline points="12 6 12 12 16 14"></polyline>
+							</svg>
+							{formatDuration(resolvedEntry.duration)}
+						</span>
 					</div>
 					
 					{#if resolvedEntry.description}
-						<p class="text-sm text-slate-600 leading-relaxed mt-3 pt-5 border-t border-slate-200/30">{resolvedEntry.description}</p>
+						<p class="text-sm text-slate-600 leading-relaxed mt-2 pt-3 border-t border-slate-200/20">{resolvedEntry.description}</p>
 					{/if}
 				</div>
 			</div>
 		</GlassCard>
+		
+		<!-- Success Indicator - Compact below card -->
+		<div class="text-center">
+			<div class="inline-flex items-center gap-2 text-sm text-secondary-600 font-medium">
+				<div class="w-5 h-5 bg-gradient-to-br from-secondary-400/20 to-secondary-500/15 rounded-full flex items-center justify-center">
+					<svg class="w-3 h-3 text-secondary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+					</svg>
+				</div>
+				<span>{actionTitle}</span>
+			</div>
+		</div>
 	{:else}
 		<!-- Error State -->
 		<div class="mt-8">
