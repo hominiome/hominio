@@ -59,15 +59,15 @@
 					</h3>
 					<div class="grid grid-cols-1 gap-3 sm:gap-4">
 						{#each menu[cat.id] as item}
-							<GlassCard lifted={true} class="p-0 overflow-hidden flex items-stretch">
-								<div class="flex-1 p-3 sm:p-4 min-w-0 flex-shrink">
-									<h4 class="text-sm sm:text-base font-semibold text-slate-800 mb-1 sm:mb-2">{item.name}</h4>
-									<p class="text-xs sm:text-sm text-slate-600">{item.description}</p>
+							<GlassCard lifted={true} class="p-0 overflow-hidden flex items-stretch border-0 bg-white/70 backdrop-blur-md shadow-lg rounded-2xl">
+								<div class="flex-1 p-4 sm:p-5 min-w-0 flex-shrink flex flex-col justify-center">
+									<h4 class="text-base sm:text-lg font-bold text-slate-800 mb-1.5 sm:mb-2 leading-tight">{item.name}</h4>
+									<p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{item.description}</p>
 								</div>
-								<div class="w-[100px] sm:w-[140px] min-w-[100px] sm:min-w-[140px] max-w-[100px] sm:max-w-[140px] bg-secondary-500 text-secondary-50 px-3 sm:px-6 py-3 sm:py-4 flex flex-col items-end justify-center flex-shrink-0 box-border">
-									<div class="text-base sm:text-2xl font-bold whitespace-nowrap text-right leading-tight w-full overflow-hidden">{formatPrice(item.price)}</div>
+								<div class="w-[110px] sm:w-[150px] min-w-[110px] sm:min-w-[150px] max-w-[110px] sm:max-w-[150px] bg-gradient-to-br from-secondary-400/15 via-secondary-500/10 to-secondary-600/5 border-l border-secondary-200/30 px-4 sm:px-6 py-4 sm:py-5 flex flex-col items-end justify-center flex-shrink-0 box-border">
+									<div class="text-lg sm:text-2xl font-extrabold text-secondary-700 whitespace-nowrap text-right leading-tight w-full overflow-hidden mb-1">{formatPrice(item.price)}</div>
 									{#if item.type}
-										<div class="text-xs sm:text-sm uppercase tracking-wide mt-0.5 sm:mt-1 text-right leading-tight w-full overflow-hidden">{item.type}</div>
+										<div class="text-[0.65rem] sm:text-xs uppercase tracking-wider mt-0.5 sm:mt-1 text-secondary-600 text-right leading-tight w-full overflow-hidden font-semibold">{item.type}</div>
 									{/if}
 								</div>
 							</GlassCard>
@@ -85,15 +85,15 @@
 				</h3>
 				<div class="grid grid-cols-1 gap-3 sm:gap-4">
 					{#each menu[category] as item}
-						<GlassCard lifted={true} class="p-0 overflow-hidden flex items-stretch">
-							<div class="flex-1 p-3 sm:p-4 min-w-0 flex-shrink">
-								<h4 class="text-sm sm:text-base font-semibold text-slate-800 mb-1 sm:mb-2">{item.name}</h4>
-								<p class="text-xs sm:text-sm text-slate-600">{item.description}</p>
+						<GlassCard lifted={true} class="p-0 overflow-hidden flex items-stretch border-0 bg-white/70 backdrop-blur-md shadow-lg rounded-2xl">
+							<div class="flex-1 p-4 sm:p-5 min-w-0 flex-shrink flex flex-col justify-center">
+								<h4 class="text-base sm:text-lg font-bold text-slate-800 mb-1.5 sm:mb-2 leading-tight">{item.name}</h4>
+								<p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{item.description}</p>
 							</div>
-							<div class="w-[100px] sm:w-[140px] min-w-[100px] sm:min-w-[140px] max-w-[100px] sm:max-w-[140px] bg-secondary-500 text-secondary-50 px-3 sm:px-6 py-3 sm:py-4 flex flex-col items-end justify-center flex-shrink-0 box-border">
-								<div class="text-base sm:text-2xl font-bold whitespace-nowrap text-right leading-tight w-full overflow-hidden">{formatPrice(item.price)}</div>
+							<div class="w-[110px] sm:w-[150px] min-w-[110px] sm:min-w-[150px] max-w-[110px] sm:max-w-[150px] bg-gradient-to-br from-secondary-400/15 via-secondary-500/10 to-secondary-600/5 border-l border-secondary-200/30 px-4 sm:px-6 py-4 sm:py-5 flex flex-col items-end justify-center flex-shrink-0 box-border">
+								<div class="text-lg sm:text-2xl font-extrabold text-secondary-700 whitespace-nowrap text-right leading-tight w-full overflow-hidden mb-1">{formatPrice(item.price)}</div>
 								{#if item.type}
-									<div class="text-xs sm:text-sm uppercase tracking-wide mt-0.5 sm:mt-1 text-right leading-tight w-full overflow-hidden">{item.type}</div>
+									<div class="text-[0.65rem] sm:text-xs uppercase tracking-wider mt-0.5 sm:mt-1 text-secondary-600 text-right leading-tight w-full overflow-hidden font-semibold">{item.type}</div>
 								{/if}
 							</div>
 						</GlassCard>
