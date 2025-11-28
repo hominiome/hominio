@@ -23,5 +23,14 @@ export default defineConfig({
     resolve: {
         // Ensure proper module resolution in monorepo
         preserveSymlinks: false,
+        alias: {
+            // Ensure workspace packages resolve correctly during build
+            '@hominio/voice': resolve(__dirname, '../../libs/hominio-voice/src'),
+            '@hominio/vibes': resolve(__dirname, '../../libs/hominio-vibes/src'),
+            '@hominio/auth': resolve(__dirname, '../../libs/hominio-auth/src'),
+            '@hominio/brand': resolve(__dirname, '../../libs/hominio-brand/src'),
+            '@hominio/caps': resolve(__dirname, '../../libs/hominio-caps/src'),
+            '@hominio/zero': resolve(__dirname, '../../libs/hominio-zero/src')
+        }
     },
 });

@@ -17,7 +17,10 @@
     
     
     // State for collapsing - queries default to closed, skills default to expanded
-    let expanded = $state(isQuery ? false : isExpanded);
+    // Initialize based on isQuery and isExpanded props
+    // Use $derived to compute initial value reactively
+    const initialExpanded = $derived(isQuery ? false : isExpanded);
+    let expanded = $state(initialExpanded);
     
     // Profile image state
     let avatarUrl = $state<string | null>(null);

@@ -623,35 +623,6 @@
 </div>
 
 <style>
-    .expiration-banner {
-        background: linear-gradient(to right, var(--color-warning-50), var(--color-warning-100));
-        border: 2px solid var(--color-warning-300);
-        border-radius: 0.75rem;
-        padding: 1rem;
-        box-shadow: 0 4px 12px rgba(255, 153, 51, 0.15); /* warning-500 with opacity */
-    }
-    
-    .expiration-banner svg {
-        color: var(--color-warning-600);
-    }
-    
-    .expiration-title {
-        font-weight: 700;
-        color: var(--color-warning-900);
-        font-size: 1.125rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    .expiration-description {
-        font-size: 0.875rem;
-        color: var(--color-warning-800);
-    }
-    
-    .expiration-description strong {
-        font-weight: 700;
-        color: var(--color-warning-900);
-    }
-    
     .tab-button {
         padding: 0.75rem 1.5rem;
         font-size: 0.875rem;
@@ -729,13 +700,6 @@
         color: #64748b;
         line-height: 1.5;
         margin: 0;
-    }
-    
-    .admin-capability-user {
-        font-size: 0.75rem;
-        color: #94a3b8;
-        margin: 0;
-        margin-top: 0.125rem;
     }
     
     .admin-capability-metadata {
