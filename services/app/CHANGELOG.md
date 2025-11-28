@@ -1,3 +1,17 @@
+## [0.16.1](https://github.com/hominiome/hominio/compare/v0.16.0...v0.16.1) (2025-11-28)
+
+
+### Bug Fixes
+
+* add vite alias for @hominio/brand/views to resolve build errors ([3a20c18](https://github.com/hominiome/hominio/commit/3a20c18f738cd1e651cee565e057b881e6e7c057))
+* correct comment in injectVibeContext to match actual behavior ([b571511](https://github.com/hominiome/hominio/commit/b571511a6ffe395e5456ea36017ef196961216e4))
+* extract CalendarEntry interface to shared types file ([bb4e08b](https://github.com/hominiome/hominio/commit/bb4e08b20e6e4f968f0b51e2fda9f1e356591fcf))
+* prevent duplicate AI responses from queryDataContext ([774ca6f](https://github.com/hominiome/hominio/commit/774ca6f42799d9bdca8001d95c05b72ed8cc2322))
+* reduce gap between activity stream elements ([da661d0](https://github.com/hominiome/hominio/commit/da661d018b2054b6b5d0d20aef89c10f23e6391b))
+* resolve calendar view props mismatch and formatDuration plural bug ([0801a99](https://github.com/hominiome/hominio/commit/0801a99e1f16e06742132ab4500568b667beb511))
+* resolve context injection feedback loops and improve calendar entry UI ([48b2db6](https://github.com/hominiome/hominio/commit/48b2db6d2042f5e82a7769e3ebbda85e7f65b12b))
+* resolve syntax error and wallet deployment issue ([b03f68f](https://github.com/hominiome/hominio/commit/b03f68fffad0bc881941e97facb6f3b011dd0dd4))
+
 # [0.16.0](https://github.com/hominiome/hominio/compare/v0.15.2...v0.16.0) (2025-11-28)
 
 
