@@ -28,7 +28,8 @@ COPY services/app/ .
 # Sync brand assets to static folder before build
 RUN node libs/hominio-brand/scripts/sync-assets.js
 # Run svelte-kit sync before build to generate .svelte-kit directory
-RUN cd /app && bun run prepare || true
+# Ensure .svelte-kit directory exists before build
+RUN cd /app && bunx svelte-kit sync || true
 RUN cd /app && bun run build
 
 # Production image
