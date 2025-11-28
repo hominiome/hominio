@@ -10,6 +10,7 @@ COPY package.json bun.lock* /temp/dev/
 # Copy workspace package.json files and source
 COPY services/app/package.json /temp/dev/services/app/
 COPY libs/hominio-vibes/ /temp/dev/libs/hominio-vibes/
+COPY libs/hominio-voice/ /temp/dev/libs/hominio-voice/
 COPY libs/hominio-auth/ /temp/dev/libs/hominio-auth/
 COPY libs/hominio-zero/ /temp/dev/libs/hominio-zero/
 COPY libs/hominio-caps/ /temp/dev/libs/hominio-caps/

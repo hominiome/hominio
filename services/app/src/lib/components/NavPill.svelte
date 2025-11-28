@@ -3,7 +3,7 @@
     import { page } from '$app/stores';
     import { createAuthClient } from '@hominio/auth';
     import { NavPill } from '@hominio/brand';
-    import { createVoiceCallService } from '@hominio/voice';
+    import { getContext } from 'svelte';
     import type { Capability } from '@hominio/caps';
 
 	const authClient = createAuthClient();
@@ -47,8 +47,8 @@
 		}
 	});
 
-	// Initialize voice call service
-	const voiceCall = createVoiceCallService();
+	// Get shared voice call service from layout context
+	const voiceCall = getContext('voiceCallService');
 
 	// Listen for tool call events from voice service
 	$effect(() => {

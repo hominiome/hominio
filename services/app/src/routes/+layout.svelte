@@ -10,6 +10,7 @@
 	import { onMount, setContext } from 'svelte';
 	import { browser } from '$app/environment';
 	import { env as publicEnv } from '$env/dynamic/public';
+	import { createVoiceCallService } from '@hominio/voice';
 
 	let { children } = $props();
 
@@ -18,6 +19,9 @@
 	// See: https://www.better-auth.com/docs/integrations/svelte-kit
 	const authClient = createAuthClient();
 	const session = authClient.useSession();
+
+	// Shared voice call service (used by NavPill and /me route)
+	const voiceCallService = createVoiceCallService();
 
 	// Zero client state
 	let zero: any = $state(null);
@@ -121,6 +125,9 @@
 		getError: () => zeroError,
 		getServerUrl: () => zeroServerUrl,
 	});
+
+	// Provide shared voice call service to child components
+	setContext('voiceCallService', voiceCallService);
 
 	// Reactive check: redirect to signin if not authenticated (except on signin page)
 	$effect(() => {
