@@ -6,6 +6,6 @@
 export { default as CalendarView } from './CalendarView.svelte';
 export { default as CalendarEntryView } from './CalendarEntryView.svelte';
 
-// Export TypeScript interfaces
-export type { CalendarEntry } from './types.js';
+// TypeScript interfaces are exported from types.ts
+// Import directly: import type { CalendarEntry } from '@hominio/brand/views/types.js'
 

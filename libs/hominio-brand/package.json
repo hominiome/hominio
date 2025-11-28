@@ -10,6 +10,7 @@
 		"./tailwind.config.js": "./tailwind.config.js",
 		"./components": "./src/components/index.js",
 		"./views": "./src/views/index.js",
+		"./views/types": "./src/views/types.ts",
 		"./tokens": "./src/tokens/index.js",
 		"./utilities": "./src/utilities/index.js",
 		"./legal/privacy-policy": "./src/legal/privacy-policy/+page.svelte",
