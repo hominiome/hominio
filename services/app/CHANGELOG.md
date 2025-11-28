@@ -1,3 +1,14 @@
+## [0.16.3](https://github.com/hominiome/hominio/compare/v0.16.2...v0.16.3) (2025-11-28)
+
+
+### Bug Fixes
+
+* prevent duplicate responses for view operations and reorder tool calls ([26c9a02](https://github.com/hominiome/hominio/commit/26c9a0247890c8d948e7192e626fff349587e3b0))
+* properly handle svelte-kit sync failure in Docker build ([956fad3](https://github.com/hominiome/hominio/commit/956fad3210133b6d5a0395ed36e2fe1f8790ca63))
+* remove repeated prompt after queryDataContext and harden Docker build ([4d39355](https://github.com/hominiome/hominio/commit/4d39355cadc9e8d0e08ef6b0084840ec855ac9e5))
+* restore error handling for svelte-kit sync in Docker build ([8b2fbf1](https://github.com/hominiome/hominio/commit/8b2fbf1a36c097c4c2bd463caf2d837c34b52858))
+* restore Karl workflow and improve menu pricing styling ([02a4cf8](https://github.com/hominiome/hominio/commit/02a4cf8c069db6b0b5c71921eeedb3203786a470))
+
 ## [0.16.2](https://github.com/hominiome/hominio/compare/v0.16.1...v0.16.2) (2025-11-28)
 
 
