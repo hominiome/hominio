@@ -196,13 +196,24 @@ export async function createVoiceSessionManager(
 		});
 
 		// Inject repeated prompt to continue the conversation flow
-		// After queryDataContext: DON'T inject - let AI naturally continue to actionSkill or respond
+		// After queryDataContext: Inject ONLY for calendar schema (Karl's workflow: queryDataContext → actionSkill)
+		//   - For menu/wellness schemas (Charles' workflow: actionSkill → queryDataContext), DON'T inject
 		// After actionSkill: only inject if NOT a view/mutation operation (view/mutation operations show UI and should complete naturally)
 		// After queryVibeContext: don't inject (background operation, no follow-up needed)
-		// Note: We don't inject after queryDataContext because:
-		// 1. If followed by actionSkill, we don't want premature responses
-		// 2. If not followed by actionSkill, AI will naturally respond anyway
-		if (name === 'actionSkill') {
+		if (name === 'queryDataContext') {
+			// Only inject repeated prompt for calendar schema (Karl's workflow)
+			// Karl uses queryDataContext BEFORE actionSkill, so we need to nudge continuation
+			// Charles uses actionSkill BEFORE queryDataContext, so we don't want premature responses
+			const schemaId = args?.schemaId || '';
+			if (schemaId === 'calendar') {
+				try {
+					const repeatedPrompt = await buildRepeatedPrompt();
+					await contextInjection.injectRepeatedPrompt(repeatedPrompt);
+				} catch (err) {
+					console.error('[hominio-voice] Failed to inject repeated prompt:', err);
+				}
+			}
+		} else if (name === 'actionSkill') {
 			// Only inject repeated prompt for operations that don't show UI or success confirmations
 			// View operations (show-menu, show-wellness, view-calendar) show UI and should complete naturally
 			// Mutation operations (create/edit/delete) show success views and should complete naturally

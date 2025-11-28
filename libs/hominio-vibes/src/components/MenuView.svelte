@@ -45,8 +45,8 @@
 
 
 <div>
-	<div class="flex items-center justify-center mb-8">
-		<h2 class="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-secondary-400 to-secondary-500 bg-clip-text text-transparent tracking-tight text-center">Speisekarte</h2>
+	<div class="flex justify-center items-center mb-8">
+		<h2 class="text-2xl font-extrabold tracking-tight text-center text-transparent bg-clip-text bg-gradient-to-br sm:text-3xl from-secondary-400 to-secondary-500">Speisekarte</h2>
 	</div>
 	
 	{#if category === 'all'}
@@ -54,20 +54,20 @@
 		{#each categories as cat}
 			{#if menu[cat.id] && menu[cat.id].length > 0}
 				<div class="mb-8">
-					<h3 class="mb-4 text-lg sm:text-xl font-bold text-secondary-500 text-center">
+					<h3 class="mb-4 text-lg font-bold text-center sm:text-xl text-secondary-500">
 						{cat.name}
 					</h3>
 					<div class="grid grid-cols-1 gap-3 sm:gap-4">
 						{#each menu[cat.id] as item}
-							<GlassCard lifted={true} class="p-0 overflow-hidden flex items-stretch border-0 bg-white/70 backdrop-blur-md shadow-lg rounded-2xl">
-								<div class="flex-1 p-4 sm:p-5 min-w-0 flex-shrink flex flex-col justify-center">
-									<h4 class="text-base sm:text-lg font-bold text-slate-800 mb-1.5 sm:mb-2 leading-tight">{item.name}</h4>
-									<p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{item.description}</p>
+							<GlassCard lifted={true} class="flex overflow-hidden items-stretch p-0 rounded-2xl border-0 shadow-lg backdrop-blur-md bg-white/70">
+								<div class="flex flex-col flex-1 flex-shrink justify-center p-4 min-w-0 sm:p-5">
+									<h4 class="mb-1.5 text-base font-bold leading-tight sm:text-lg text-slate-800 sm:mb-2">{item.name}</h4>
+									<p class="text-xs leading-relaxed sm:text-sm text-slate-600">{item.description}</p>
 								</div>
-								<div class="w-[110px] sm:w-[150px] min-w-[110px] sm:min-w-[150px] max-w-[110px] sm:max-w-[150px] bg-gradient-to-br from-secondary-400/15 via-secondary-500/10 to-secondary-600/5 border-l border-secondary-200/30 px-4 sm:px-6 py-4 sm:py-5 flex flex-col items-end justify-center flex-shrink-0 box-border">
-									<div class="text-lg sm:text-2xl font-extrabold text-secondary-700 whitespace-nowrap text-right leading-tight w-full overflow-hidden mb-1">{formatPrice(item.price)}</div>
+								<div class="w-[120px] sm:w-[160px] min-w-[120px] sm:min-w-[160px] max-w-[120px] sm:max-w-[160px] bg-secondary-500/20 border-l-2 border-secondary-400/40 px-4 sm:px-6 py-4 sm:py-5 flex flex-col items-end justify-center flex-shrink-0">
+									<div class="text-lg sm:text-2xl font-extrabold text-secondary-700 text-right whitespace-nowrap mb-1">{formatPrice(item.price)}</div>
 									{#if item.type}
-										<div class="text-[0.65rem] sm:text-xs uppercase tracking-wider mt-0.5 sm:mt-1 text-secondary-600 text-right leading-tight w-full overflow-hidden font-semibold">{item.type}</div>
+										<div class="text-[0.7rem] sm:text-xs uppercase tracking-wider text-secondary-600 text-right font-semibold">{item.type}</div>
 									{/if}
 								</div>
 							</GlassCard>
@@ -80,20 +80,20 @@
 		<!-- Show single category -->
 		{#if menu[category] && menu[category].length > 0}
 			<div>
-				<h3 class="mb-4 text-lg sm:text-xl font-bold text-secondary-500 text-center">
+				<h3 class="mb-4 text-lg font-bold text-center sm:text-xl text-secondary-500">
 					{categories.find(c => c.id === category)?.name || category}
 				</h3>
 				<div class="grid grid-cols-1 gap-3 sm:gap-4">
 					{#each menu[category] as item}
-						<GlassCard lifted={true} class="p-0 overflow-hidden flex items-stretch border-0 bg-white/70 backdrop-blur-md shadow-lg rounded-2xl">
-							<div class="flex-1 p-4 sm:p-5 min-w-0 flex-shrink flex flex-col justify-center">
-								<h4 class="text-base sm:text-lg font-bold text-slate-800 mb-1.5 sm:mb-2 leading-tight">{item.name}</h4>
-								<p class="text-xs sm:text-sm text-slate-600 leading-relaxed">{item.description}</p>
+						<GlassCard lifted={true} class="flex overflow-hidden items-stretch p-0 rounded-2xl border-0 shadow-lg backdrop-blur-md bg-white/70">
+							<div class="flex flex-col flex-1 flex-shrink justify-center p-4 min-w-0 sm:p-5">
+								<h4 class="mb-1.5 text-base font-bold leading-tight sm:text-lg text-slate-800 sm:mb-2">{item.name}</h4>
+								<p class="text-xs leading-relaxed sm:text-sm text-slate-600">{item.description}</p>
 							</div>
-							<div class="w-[110px] sm:w-[150px] min-w-[110px] sm:min-w-[150px] max-w-[110px] sm:max-w-[150px] bg-gradient-to-br from-secondary-400/15 via-secondary-500/10 to-secondary-600/5 border-l border-secondary-200/30 px-4 sm:px-6 py-4 sm:py-5 flex flex-col items-end justify-center flex-shrink-0 box-border">
-								<div class="text-lg sm:text-2xl font-extrabold text-secondary-700 whitespace-nowrap text-right leading-tight w-full overflow-hidden mb-1">{formatPrice(item.price)}</div>
+							<div class="w-[120px] sm:w-[160px] min-w-[120px] sm:min-w-[160px] max-w-[120px] sm:max-w-[160px] bg-secondary-500/20 border-l-2 border-secondary-400/40 px-4 sm:px-6 py-4 sm:py-5 flex flex-col items-end justify-center flex-shrink-0">
+								<div class="text-lg sm:text-2xl font-extrabold text-secondary-700 text-right whitespace-nowrap mb-1">{formatPrice(item.price)}</div>
 								{#if item.type}
-									<div class="text-[0.65rem] sm:text-xs uppercase tracking-wider mt-0.5 sm:mt-1 text-secondary-600 text-right leading-tight w-full overflow-hidden font-semibold">{item.type}</div>
+									<div class="text-[0.7rem] sm:text-xs uppercase tracking-wider text-secondary-600 text-right font-semibold">{item.type}</div>
 								{/if}
 							</div>
 						</GlassCard>
@@ -101,7 +101,7 @@
 				</div>
 			</div>
 		{:else}
-			<div class="text-center py-8 text-slate-500">
+			<div class="py-8 text-center text-slate-500">
 				Keine Artikel in dieser Kategorie gefunden.
 			</div>
 		{/if}
