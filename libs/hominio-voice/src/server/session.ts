@@ -207,12 +207,16 @@ export async function createVoiceSessionManager(
 				console.error('[hominio-voice] Failed to inject repeated prompt:', err);
 			}
 		} else if (name === 'actionSkill') {
-			// Only inject repeated prompt for non-create operations
-			// Create operations (create-calendar-entry, etc.) should complete naturally without prompting
+			// Only inject repeated prompt for operations that don't show success confirmations
+			// Create/edit/delete operations (create-calendar-entry, edit-calendar-entry, delete-calendar-entry, etc.)
+			// should complete naturally without prompting since they show success views
 			const skillId = args?.skillId || '';
-			const isCreateOperation = skillId.includes('create') || skillId.includes('Create');
+			const isMutationOperation = 
+				skillId.includes('create') || skillId.includes('Create') ||
+				skillId.includes('edit') || skillId.includes('Edit') ||
+				skillId.includes('delete') || skillId.includes('Delete');
 			
-			if (!isCreateOperation) {
+			if (!isMutationOperation) {
 				try {
 					const repeatedPrompt = await buildRepeatedPrompt();
 					await contextInjection.injectRepeatedPrompt(repeatedPrompt);
